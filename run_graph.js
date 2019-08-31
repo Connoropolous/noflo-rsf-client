@@ -12,18 +12,74 @@ async function start(graph, address, secret) {
 
     await client.connect()
 
-    client.on('signal', console.log)
+    console.log('connected')
+
 
     await client.protocol.graph.send(graph, true)
-    client.protocol.network.start({
+
+    console.log('sent graph')
+
+    await client.protocol.network.start({
         graph: graph.name,
     })
+
+    console.log('started network')
 }
 
-module.exports = (address, secret) => {
-    // fbpGraph.graph.loadJSON(definition, callback, metadata)
-    fbpGraph.graph.loadFile('rsf.json', (err, graph) => {
+function convertDataFromSheetToRSF(connection, inputData) {
+    // all incoming data are strings
+    if (connection.tgt.process === 'CollectResponses ParticipantConfig' && connection.tgt.port === 'in') {
+        return JSON.stringify(inputData.split('\n').map(username => ({
+            type: 'mattermost',
+            id: `${username}@https://chat.diglife.coop`
+        })))
+    }
+    else if (connection.tgt.process === 'rsf/CollectResponses_mbtdi' && connection.tgt.port === 'prompt') {
+        return inputData
+    }
+    else if (connection.tgt.process === 'rsf/CollectResponses_mbtdi' && connection.tgt.port === 'max_responses') {
+        return parseInt(inputData)
+    }
+    else if (connection.tgt.process === 'rsf/CollectResponses_mbtdi' && connection.tgt.port === 'max_time') {
+        return parseInt(inputData)
+    }
+    else if (connection.tgt.process === 'SendMessageToAll ParticipantConfig' && connection.tgt.port === 'in') {
+        return JSON.stringify(inputData.split('\n').map(username => ({
+            type: 'mattermost',
+            id: `${username}@https://chat.diglife.coop`
+        })))
+    }
+}
+
+module.exports = (inputs, address, secret) => {
+    const originalGraph = require('./rsf.json')
+    const modifiedGraph = {
+        ...originalGraph,
+        // override the name, give a unique name to this graph
+        properties: {
+            ...originalGraph.properties,
+            name: `${Math.random() * 100}randomid`
+        },
+        // override the connections
+        connections: originalGraph.connections.map(connection => {
+            const foundOverride = inputs.find(input => {
+                return input.inputType.process === connection.tgt.process && input.inputType.port === connection.tgt.port
+            })
+            if (foundOverride) {
+                return {
+                    tgt: {
+                        ...connection.tgt
+                    },
+                    data: convertDataFromSheetToRSF(connection, foundOverride.inputData)
+                }
+            }
+            else return connection
+        })
+    }
+
+    fbpGraph.graph.loadJSON(modifiedGraph, (err, graph) => {
         if (!err) start(graph, address, secret)
+        else console.log(err)
     })
 }
 

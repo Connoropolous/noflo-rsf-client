@@ -1,0 +1,216 @@
+{
+    "caseSensitive": false,
+    "properties": {
+        "name": "collect-responses",
+        "environment": {
+            "type": "noflo-nodejs"
+        }
+    },
+    "inports": {},
+    "outports": {},
+    "groups": [],
+    "processes": {
+        "rsf/CollectResponses_mbtdi": {
+            "component": "rsf/CollectResponses",
+            "metadata": {
+                "label": "CollectResponses",
+                "x": 180,
+                "y": 36,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "BotConfig ParseJson": {
+            "component": "strings/ParseJson",
+            "metadata": {
+                "label": "BotConfig ParseJson",
+                "x": 72,
+                "y": 180,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "CollectResponses ParticipantConfig": {
+            "component": "strings/ParseJson",
+            "metadata": {
+                "label": "CollectResponses ParticipantConfig",
+                "x": -72,
+                "y": 36,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "rsf/SendMessageToAll_rxtoo": {
+            "component": "rsf/SendMessageToAll",
+            "metadata": {
+                "label": "SendMessageToAll",
+                "x": 576,
+                "y": 180,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "rsf/FormatStatementList_v9qk4": {
+            "component": "rsf/FormatStatementList",
+            "metadata": {
+                "label": "FormatStatementList",
+                "x": 396,
+                "y": 36,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "SendMessageToAll ParticipantConfig": {
+            "component": "strings/ParseJson",
+            "metadata": {
+                "label": "SendMessageToAll ParticipantConfig",
+                "x": 324,
+                "y": 288,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "core/ReadEnv_o2973": {
+            "component": "core/ReadEnv",
+            "metadata": {
+                "label": "ReadEnv",
+                "x": -144,
+                "y": 216,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "connections": [
+        {
+            "src": {
+                "process": "BotConfig ParseJson",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "rsf/CollectResponses_mbtdi",
+                "port": "bot_configs"
+            },
+            "metadata": {
+                "route": 0
+            }
+        },
+        {
+            "src": {
+                "process": "BotConfig ParseJson",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "rsf/SendMessageToAll_rxtoo",
+                "port": "bot_configs"
+            },
+            "metadata": {
+                "route": 0
+            }
+        },
+        {
+            "src": {
+                "process": "CollectResponses ParticipantConfig",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "rsf/CollectResponses_mbtdi",
+                "port": "contactable_configs"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "rsf/CollectResponses_mbtdi",
+                "port": "results"
+            },
+            "tgt": {
+                "process": "rsf/FormatStatementList_v9qk4",
+                "port": "statements"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "rsf/FormatStatementList_v9qk4",
+                "port": "formatted"
+            },
+            "tgt": {
+                "process": "rsf/SendMessageToAll_rxtoo",
+                "port": "message"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "SendMessageToAll ParticipantConfig",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "rsf/SendMessageToAll_rxtoo",
+                "port": "contactable_configs"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "core/ReadEnv_o2973",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "BotConfig ParseJson",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "data": 60,
+            "tgt": {
+                "process": "rsf/CollectResponses_mbtdi",
+                "port": "max_time"
+            }
+        },
+        {
+            "data": "What is your definition of 'collective intelligence'?",
+            "tgt": {
+                "process": "rsf/CollectResponses_mbtdi",
+                "port": "prompt"
+            }
+        },
+        {
+            "data": "1",
+            "tgt": {
+                "process": "rsf/CollectResponses_mbtdi",
+                "port": "max_responses"
+            }
+        },
+        {
+            "data": "[     {         \"type\":\"mattermost\",         \"id\":\"connorturland@https://chat.holochain.org\"     } ]",
+            "tgt": {
+                "process": "CollectResponses ParticipantConfig",
+                "port": "in"
+            }
+        },
+        {
+            "data": "[     {         \"type\":\"mattermost\",         \"id\":\"connorturland@https://chat.holochain.org\"     } ]",
+            "tgt": {
+                "process": "SendMessageToAll ParticipantConfig",
+                "port": "in"
+            }
+        },
+        {
+            "data": "BOT_CONFIG",
+            "tgt": {
+                "process": "core/ReadEnv_o2973",
+                "port": "key"
+            }
+        },
+        {
+            "data": "",
+            "tgt": {
+                "process": "BotConfig ParseJson",
+                "port": "in"
+            }
+        }
+    ]
+}
