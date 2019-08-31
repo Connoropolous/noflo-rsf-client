@@ -4,7 +4,7 @@ const app = express()
 
 app.use(express.json())
 
-const runGraph = require('./run_graph')
+const runGraph = require('./run_graph.js')
  
 app.post('/handle', function (req, res) {
     console.log(req.body)
