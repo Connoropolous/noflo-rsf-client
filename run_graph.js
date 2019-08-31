@@ -52,7 +52,7 @@ function convertDataFromSheetToRSF(connection, inputData) {
 }
 
 module.exports = (inputs, address, secret) => {
-    const originalGraph = require('./rsf.json')
+    const originalGraph = require('./collect-responses.json')
     const modifiedGraph = {
         ...originalGraph,
         // override the name, give a unique name to this graph
