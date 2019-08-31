@@ -3,11 +3,11 @@ const fbpGraph = require('fbp-graph')
 // https://flowbased.github.io/fbp-protocol/
 const fbpClient = require('fbp-client')
 
-async function start(graph) {
+async function start(graph, address, secret) {
     const client = await fbpClient({
-        address: 'ws://noflo-rsf.herokuapp.com',
+        address,
         protocol: 'websocket',
-        secret: process.env.TOP_SECRET
+        secret
     })
 
     await client.connect()
@@ -20,10 +20,12 @@ async function start(graph) {
     })
 }
 
-// fbpGraph.graph.loadJSON(definition, callback, metadata)
-fbpGraph.graph.loadFile('rsf.json', (err, graph) => {
-    if (!err) start(graph)
-})
+module.exports = (address, secret) => {
+    // fbpGraph.graph.loadJSON(definition, callback, metadata)
+    fbpGraph.graph.loadFile('rsf.json', (err, graph) => {
+        if (!err) start(graph, address, secret)
+    })
+}
 
 
 

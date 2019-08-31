@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 
@@ -7,7 +8,7 @@ const runGraph = require('./run_graph')
  
 app.post('/handle', function (req, res) {
     console.log(req.body)
-    runGraph()
+    // runGraph(process.env.ADDRESS, process.env.TOP_SECRET)
     res.sendStatus(200)
 })
  
