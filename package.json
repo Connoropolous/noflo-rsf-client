@@ -1,0 +1,16 @@
+{
+  "name": "rsf-noflo-client",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "AGPL-3.0",
+  "dependencies": {
+    "express": "^4.17.1",
+    "fbp-client": "^0.4.0",
+    "fbp-graph": "^0.4.0"
+  }
+}
