@@ -26,12 +26,12 @@ async function start(graph, address, secret) {
     console.log('started network')
 }
 
-function convertDataFromSheetToRSF(connection, inputData) {
+function convertDataFromSheetToRSF(connection, inputData, mattermostServer) {
     // all incoming data are strings
     if (connection.tgt.process === 'CollectResponses ParticipantConfig' && connection.tgt.port === 'in') {
         return JSON.stringify(inputData.split('\n').map(username => ({
             type: 'mattermost',
-            id: `${username}@https://chat.diglife.coop`
+            id: `${username}@${mattermostServer}`
         })))
     }
     else if (connection.tgt.process === 'rsf/CollectResponses_mbtdi' && connection.tgt.port === 'prompt') {
@@ -46,12 +46,12 @@ function convertDataFromSheetToRSF(connection, inputData) {
     else if (connection.tgt.process === 'SendMessageToAll ParticipantConfig' && connection.tgt.port === 'in') {
         return JSON.stringify(inputData.split('\n').map(username => ({
             type: 'mattermost',
-            id: `${username}@https://chat.diglife.coop`
+            id: `${username}@${mattermostServer}`
         })))
     }
 }
 
-module.exports = (inputs, address, secret) => {
+module.exports = (inputs, mattermostServer, address, secret) => {
     const originalGraph = require('./collect-responses.json')
     const modifiedGraph = {
         ...originalGraph,
@@ -70,7 +70,7 @@ module.exports = (inputs, address, secret) => {
                     tgt: {
                         ...connection.tgt
                     },
-                    data: convertDataFromSheetToRSF(connection, foundOverride.inputData)
+                    data: convertDataFromSheetToRSF(connection, foundOverride.inputData, mattermostServer)
                 }
             }
             else return connection

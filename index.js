@@ -6,15 +6,6 @@ app.use(express.json())
 
 const runGraph = require('./run_graph.js')
 
-/*
-{ 'COL$B': 'connorturland',
-  'COL$F': 'connorturland',
-  'COL$E': '300',
-  'COL$D': '3',
-  'COL$C': 't',
-  id: '2',
-  'COL$A': '8/31/2019 11:25:06',
-*/
 const map = {
     'COL$B': {
         process: 'CollectResponses ParticipantConfig',
@@ -51,7 +42,9 @@ app.post('/handle', function (req, res) {
         }
     })
 
-    runGraph(inputs, process.env.ADDRESS, process.env.TOP_SECRET)
+    const mattermostServer = req.body['COL$G']
+
+    runGraph(inputs, mattermostServer, process.env.ADDRESS, process.env.TOP_SECRET)
     res.sendStatus(200)
 })
  
