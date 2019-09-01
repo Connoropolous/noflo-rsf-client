@@ -2,7 +2,7 @@
 
 has a `/handle` endpoint for receiving webhook requests from Zapier. 
 
-Google Form -> Google Spreadsheet -> noflo-rsf-client (on heroku) -> noflo-rsf (heroku noflo server)
+Google Form -> Google Spreadsheet -> Zapier Zap (automation recipe) -> noflo-rsf-client (on heroku) -> noflo-rsf (heroku noflo server)
 
 This repo could be extended to allow different noflo graphs representing various rsf type flows. 
 
