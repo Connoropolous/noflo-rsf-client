@@ -19,9 +19,6 @@ ADDRESS=ws://some-noflo-server.com
 
 
 The google scripts hook being worked with
-https://developers.google.com/apps-script/guides/triggers/events#edit
-https://developers.google.com/apps-script/reference/spreadsheet/range#getValues()
-https://developers.google.com/apps-script/guides/triggers/
 
 ```
 var url = 'https://noflo-rsf-client.herokuapp.com/handle'
@@ -51,4 +48,22 @@ function onEdit(e) {
 }
 ```
 
-Then you have to set up the 'trigger'
+Useful links:
+- https://developers.google.com/apps-script/guides/triggers/events#edit
+- https://developers.google.com/apps-script/reference/spreadsheet/range#getValues()
+- https://developers.google.com/apps-script/guides/triggers/
+
+## Set up the trigger
+
+- Go to https://script.google.com/home/my and click on your script.
+- Go to 'Project Details -> ...(vertical) -> Triggers'
+- Click '+ Add Trigger' in the bottom right
+- Configure it as follows:
+    - Function: onEdit
+    - Deployment: Head
+    - Event Source: From spreadsheet
+    - Event Type: On edit
+- Click 'Save'
+
+
+
