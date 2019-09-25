@@ -6,24 +6,26 @@ app.use(express.json())
 
 const runGraph = require('./run_graph.js')
 
-const map = {
-    'COL$B': {
+const mattermostServerColumnIndex = 6
+
+const columnMap = {
+    '1': {
         process: 'CollectResponses ParticipantConfig',
         port: 'in',
     },
-    'COL$C': {
+    '2': {
         process: 'rsf/CollectResponses_mbtdi',
         port: 'prompt',
     },
-    'COL$D': {
+    '3': {
         process: 'rsf/CollectResponses_mbtdi',
         port: 'max_responses',
     },
-    'COL$E': {
+    '4': {
         process: 'rsf/CollectResponses_mbtdi',
         port: 'max_time',
     },
-    'COL$F': {
+    '5': {
         process: 'SendMessageToAll ParticipantConfig',
         port: 'in'
     }
@@ -32,17 +34,17 @@ const map = {
 app.post('/handle', function (req, res) {
 
     console.log('received a new request to run a graph')
-    // ?
-    const inputs = Object.keys(map).map(column => {
-        const inputType = map[column]
-        const inputData = req.body[column]
+    const inputs = Object.keys(columnMap).map(indexString => {
+        const inputType = columnMap[indexString]
+        const index = parseInt(indexString)
+        const inputData = req.body.columns[index]
         return {
             inputType,
             inputData
         }
     })
 
-    const mattermostServer = req.body['COL$G']
+    const mattermostServer = req.body.columns[mattermostServerColumnIndex]
 
     runGraph(inputs, mattermostServer, process.env.ADDRESS, process.env.TOP_SECRET)
     res.sendStatus(200)
