@@ -1,6 +1,6 @@
 # noflo-rsf-client
 
-has a `/handle` endpoint for receiving webhook requests from Zapier. 
+has a `/handle` endpoint for receiving webhook requests from Google Scripts. 
 
 Google Form -> Google Spreadsheet -> Google Scripts hook -> noflo-rsf-client (on heroku) -> noflo-rsf (heroku noflo server)
 
