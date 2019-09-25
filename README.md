@@ -85,6 +85,7 @@ Useful links:
     - Event Source: From spreadsheet
     - Event Type: On edit
 - Click 'Save'
+- Accept the authentication requests for your google account, to authorize it
 
 
 
