@@ -18,8 +18,12 @@ ADDRESS=ws://some-noflo-server.com
 ```
 
 
-The google scripts hook being worked with
+# Set up the script
 
+- In the Google Sheet, of the form responses, go to 'Tools -> Script editor'
+- Add the following code to `Code.gs`
+
+**Code.gs**
 ```
 var url = 'https://noflo-rsf-client.herokuapp.com/handle'
 
@@ -45,6 +49,23 @@ function onEdit(e) {
             'columns': columns
         })
     });
+}
+```
+
+- In the script window, go to 'View' and check 'Show manifest file'
+- Open it using the file selector on the left
+- Add the following to it, in order to set the correct permission scopes
+
+**appsscript.json**
+```
+{
+  "timeZone": "America/New_York",
+  "dependencies": {
+  },
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/script.external_request"
+  ],
+  "exceptionLogging": "STACKDRIVER"
 }
 ```
 
