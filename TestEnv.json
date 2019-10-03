@@ -1,0 +1,56 @@
+{
+    "caseSensitive": false,
+    "properties": {
+        "name": "TestEnv",
+        "description": "",
+        "icon": "cog",
+        "environment": {
+            "type": "noflo-nodejs"
+        }
+    },
+    "inports": {},
+    "outports": {},
+    "groups": [],
+    "processes": {
+        "core/ReadEnv_mr40c": {
+            "component": "core/ReadEnv",
+            "metadata": {
+                "label": "ReadEnv",
+                "x": 540,
+                "y": 324,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "core/Output_foni6": {
+            "component": "core/Output",
+            "metadata": {
+                "label": "Output",
+                "x": 792,
+                "y": 324,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "connections": [
+        {
+            "src": {
+                "process": "core/ReadEnv_mr40c",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "core/Output_foni6",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "data": "BOT_CONFIG",
+            "tgt": {
+                "process": "core/ReadEnv_mr40c",
+                "port": "key"
+            }
+        }
+    ]
+}

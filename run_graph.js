@@ -3,7 +3,7 @@ const fbpGraph = require('fbp-graph')
 // https://flowbased.github.io/fbp-protocol/
 const fbpClient = require('fbp-client')
 
-async function start(graph, address, secret) {
+async function start(jsonGraph, address, secret) {
     const client = await fbpClient({
         address,
         protocol: 'websocket',
@@ -11,48 +11,122 @@ async function start(graph, address, secret) {
     })
 
     await client.connect()
-
     console.log('connected')
 
+    fbpGraph.graph.loadJSON(jsonGraph, async (err, graph) => {
+        if (err) {
+            console.log(err)
+            return
+        }
 
-    await client.protocol.graph.send(graph, true)
+        await client.protocol.graph.send(graph, true)
 
-    console.log('sent graph')
+        console.log('sent graph')
 
-    await client.protocol.network.start({
-        graph: graph.name,
+        await client.protocol.network.start({
+            graph: graph.name,
+        })
+
+        console.log('started network')
+    })
+}
+module.exports.start = start
+
+
+const handleParticipantsData = (threeColumnIndexes, columnData) => {
+
+    const splitFilterMap = (userlist, idFunc) => {
+        return userlist
+            .split('\n')
+            .filter(username => username.length > 0)
+            .map(idFunc)
+    }
+
+    return threeColumnIndexes.reduce((memo, columnIndex, currentIndex) => {
+        let idFunc
+        if (currentIndex === 0) {
+            idFunc = (username) => ({ type: 'mattermost', id: `${username}@https://chat.holochain.org` })
+        } else if (currentIndex === 1) {
+            idFunc = (username) => ({ type: 'mattermost', id: `${username}@https://chat.diglife.org` })
+        } else if (currentIndex === 2) {
+            idFunc = username => ({ type: 'telegram', id: username })
+        }
+        const participants = splitFilterMap(columnData[columnIndex], idFunc)
+        return memo.concat(participants)
+    }, [])
+}
+
+const convertDataFromSheetToRSF = (columnData) => {
+    const inputsNeeded = [
+        {
+            process: 'CollectResponses ParticipantConfig',
+            port: 'in',
+        },
+        {
+            process: 'rsf/CollectResponses_mbtdi',
+            port: 'prompt',
+        },
+        {
+            process: 'rsf/CollectResponses_mbtdi',
+            port: 'max_responses',
+        },
+        {
+            process: 'rsf/CollectResponses_mbtdi',
+            port: 'max_time',
+        },
+        {
+            process: 'SendMessageToAll ParticipantConfig',
+            port: 'in'
+        }
+    ]
+
+    // all incoming data are strings
+    return inputsNeeded.map((inputType, index) => {
+        let inputData
+        switch (index) {
+            case 0:
+                inputData = JSON.stringify(handleParticipantsData([1, 2, 3], columnData))
+                break
+            case 1:
+                inputData = columnData[4]
+                break
+            case 2:
+                inputData = parseInt(columnData[5])
+                break
+            case 3:
+                inputData = parseInt(columnData[6])
+                break
+            case 4:
+                inputData = JSON.stringify(handleParticipantsData([7, 8, 9], columnData))
+                break
+        }
+        return {
+            inputType,
+            inputData
+        }
+    })
+}
+module.exports.convertDataFromSheetToRSF = convertDataFromSheetToRSF
+
+const getJsonGraph = (inputs) => {
+    const originalGraph = require('./collect-responses.json')
+
+    // most relevant connections are inputs
+    const connections = originalGraph.connections.map(connection => {
+        const foundOverride = inputs.find(input => {
+            return input.inputType.process === connection.tgt.process && input.inputType.port === connection.tgt.port
+        })
+        if (foundOverride) {
+            return {
+                tgt: {
+                    ...connection.tgt
+                },
+                data: foundOverride.inputData
+            }
+        }
+        else return connection
     })
 
-    console.log('started network')
-}
-
-function convertDataFromSheetToRSF(connection, inputData, mattermostServer) {
-    // all incoming data are strings
-    if (connection.tgt.process === 'CollectResponses ParticipantConfig' && connection.tgt.port === 'in') {
-        return JSON.stringify(inputData.split('\n').map(username => ({
-            type: 'mattermost',
-            id: `${username}@${mattermostServer}`
-        })))
-    }
-    else if (connection.tgt.process === 'rsf/CollectResponses_mbtdi' && connection.tgt.port === 'prompt') {
-        return inputData
-    }
-    else if (connection.tgt.process === 'rsf/CollectResponses_mbtdi' && connection.tgt.port === 'max_responses') {
-        return parseInt(inputData)
-    }
-    else if (connection.tgt.process === 'rsf/CollectResponses_mbtdi' && connection.tgt.port === 'max_time') {
-        return parseInt(inputData)
-    }
-    else if (connection.tgt.process === 'SendMessageToAll ParticipantConfig' && connection.tgt.port === 'in') {
-        return JSON.stringify(inputData.split('\n').map(username => ({
-            type: 'mattermost',
-            id: `${username}@${mattermostServer}`
-        })))
-    }
-}
-
-module.exports = (inputs, mattermostServer, address, secret) => {
-    const originalGraph = require('./collect-responses.json')
     const modifiedGraph = {
         ...originalGraph,
         // override the name, give a unique name to this graph
@@ -60,29 +134,13 @@ module.exports = (inputs, mattermostServer, address, secret) => {
             ...originalGraph.properties,
             name: `${Math.random() * 100}randomid`
         },
-        // override the connections
-        connections: originalGraph.connections.map(connection => {
-            const foundOverride = inputs.find(input => {
-                return input.inputType.process === connection.tgt.process && input.inputType.port === connection.tgt.port
-            })
-            if (foundOverride) {
-                return {
-                    tgt: {
-                        ...connection.tgt
-                    },
-                    data: convertDataFromSheetToRSF(connection, foundOverride.inputData, mattermostServer)
-                }
-            }
-            else return connection
-        })
+        // override the connections, or inputs
+        connections
     }
 
-    fbpGraph.graph.loadJSON(modifiedGraph, (err, graph) => {
-        if (!err) start(graph, address, secret)
-        else console.log(err)
-    })
+    return modifiedGraph
 }
-
+module.exports.getJsonGraph = getJsonGraph
 
 
 /*
