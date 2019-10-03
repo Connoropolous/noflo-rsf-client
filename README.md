@@ -33,12 +33,7 @@ var url = 'https://noflo-rsf-client.herokuapp.com/handle'
  */
 function onEdit(e) {
     // get an array of the changes values
-    var columns = e.range.getValues()[0];
-  
-    // don't continue if there are any empty cells
-    if (columns.filter(function (i) { return !i }).length > 0) {
-        return;
-    }
+    var columns = e.range.getValues()[0]
 
     // Make a POST request with a JSON payload.
     UrlFetchApp.fetch(url, {
@@ -48,7 +43,7 @@ function onEdit(e) {
         'payload' : JSON.stringify({
             'columns': columns
         })
-    });
+    })
 }
 ```
 
