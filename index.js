@@ -8,9 +8,12 @@ const { getJsonGraph, start, convertDataFromSheetToRSF } = require('./run_graph.
 
 app.post('/handle', function (req, res) {
     console.log('received a new request to run a graph')
-    const convertedInputs = convertDataFromSheetToRSF(req.body.columns)
-    const jsonGraph = getJsonGraph(convertedInputs)
-    start(jsonGraph, process.env.ADDRESS, process.env.TOP_SECRET)
+    console.log('spreadsheet data', req.body.columns)
+    if (req.body.columns.length === 11) {
+        const convertedInputs = convertDataFromSheetToRSF(req.body.columns)
+        const jsonGraph = getJsonGraph(convertedInputs)
+        start(jsonGraph, process.env.ADDRESS, process.env.TOP_SECRET)
+    }
     res.sendStatus(200)
 })
  
