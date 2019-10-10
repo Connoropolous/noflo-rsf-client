@@ -32,7 +32,7 @@ async function start(jsonGraph, address, secret) {
 }
 module.exports.start = start
 
-
+// going into a 'makefunction' component, hence the 'return 'return'
 const handleParticipantsData = (threeColumnIndexes, columnData) => {
 
     const splitFilterMap = (userlist, idFunc) => {
@@ -42,7 +42,7 @@ const handleParticipantsData = (threeColumnIndexes, columnData) => {
             .map(idFunc)
     }
 
-    return threeColumnIndexes.reduce((memo, columnIndex, currentIndex) => {
+    const participants = threeColumnIndexes.reduce((memo, columnIndex, currentIndex) => {
         let idFunc
         if (currentIndex === 0) {
             idFunc = (username) => ({ type: 'mattermost', id: `${username}@https://chat.holochain.org` })
@@ -54,38 +54,80 @@ const handleParticipantsData = (threeColumnIndexes, columnData) => {
         const participants = splitFilterMap(columnData[columnIndex], idFunc)
         return memo.concat(participants)
     }, [])
+
+    return 'return ' + JSON.stringify(participants)
+}
+
+// going into a 'makefunction' component, hence the 'return 'return'
+const handleOptionsData = (optionsData) => {
+    // e.g. a+A=Agree, b+B=Block/c+C=Clock
+    let options = []
+    optionsData
+        .split(',')
+        .forEach(s => {
+            s.trim().split('/').forEach(o => {
+                const [triggers, text] = o.split('=')
+                options.push({
+                    triggers: triggers.split('+'),
+                    text
+                })
+            })
+        })
+    return 'return ' + JSON.stringify(options)
 }
 
 const convertDataFromSheetToRSF = (columnData) => {
     const inputsNeeded = [
+        // 0
         {
-            process: 'CollectResponses ParticipantConfig',
-            port: 'in',
+            process: 'CollectResponsesPeople',
+            port: 'function',
         },
+        // 1
         {
-            process: 'rsf/CollectResponses_mbtdi',
+            process: 'rsf/CollectResponses_lctpp',
             port: 'prompt',
         },
+        // 2
         {
-            process: 'rsf/CollectResponses_mbtdi',
+            process: 'rsf/CollectResponses_lctpp',
             port: 'max_responses',
         },
+        // 3
         {
-            process: 'rsf/CollectResponses_mbtdi',
+            process: 'rsf/CollectResponses_lctpp',
             port: 'max_time',
         },
+        // 4
         {
-            process: 'SendMessageToAll ParticipantConfig',
-            port: 'in'
+            process: 'ResponseForEachPeople',
+            port: 'function',
+        },
+        // 5
+        {
+            process: "rsf/ResponseForEach_cd3dx",
+            port: "max_time"
+        },
+        // 6
+        {
+            process: "Reaction Options",
+            port: "function"
+        },
+        // 7
+        {
+            process: 'SendMessageToAllPeople',
+            port: 'function'
         }
     ]
 
     // all incoming data are strings
+    // index 0 is timestamp
+    // index 15 is feedback
     return inputsNeeded.map((inputType, index) => {
         let inputData
         switch (index) {
             case 0:
-                inputData = JSON.stringify(handleParticipantsData([1, 2, 3], columnData))
+                inputData = handleParticipantsData([1, 2, 3], columnData)
                 break
             case 1:
                 inputData = columnData[4]
@@ -97,7 +139,16 @@ const convertDataFromSheetToRSF = (columnData) => {
                 inputData = parseInt(columnData[6])
                 break
             case 4:
-                inputData = JSON.stringify(handleParticipantsData([7, 8, 9], columnData))
+                inputData = handleParticipantsData([7, 8, 9], columnData)
+                break
+            case 5:
+                inputData = parseInt(columnData[10])
+                break
+            case 6:
+                inputData = handleOptionsData(columnData[11])
+                break
+            case 7:
+                inputData = handleParticipantsData([12, 13, 14], columnData)
                 break
         }
         return {
@@ -108,8 +159,8 @@ const convertDataFromSheetToRSF = (columnData) => {
 }
 module.exports.convertDataFromSheetToRSF = convertDataFromSheetToRSF
 
-const getJsonGraph = (inputs) => {
-    const originalGraph = require('./collect-responses.json')
+const overrideJsonGraph = (inputs, filename) => {
+    const originalGraph = require(`./${filename}`)
 
     // most relevant connections are inputs
     const connections = originalGraph.connections.map(connection => {
@@ -140,7 +191,7 @@ const getJsonGraph = (inputs) => {
 
     return modifiedGraph
 }
-module.exports.getJsonGraph = getJsonGraph
+module.exports.overrideJsonGraph = overrideJsonGraph
 
 
 /*

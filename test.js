@@ -1,16 +1,19 @@
 require('dotenv').config()
-const { start, getJsonGraph, convertDataFromSheetToRSF } = require('./run_graph')
-
-// const TestJsonGraph = require('./TestEnv.json')
+const { start, overrideJsonGraph, convertDataFromSheetToRSF } = require('./run_graph')
 
 const inputsFromSheets = [
     1234, // timestamp
-    'connorturland', // CollectResponses holochain mattermost
-    'connorturland', // CollectResponses diglife mattermost
+    '', // 'connorturland', // CollectResponses holochain mattermost
+    '', // 'connorturland', // CollectResponses diglife mattermost
     'connorturland', // CollectResponses telegram
-    'sheets test prompt', // prompt
-    '3', // max responses
-    '300', // max time
+    'sheets test prompt', // CollectResponses prompt
+    '3', // CollectResponses max responses
+    '300', // CollectResponses max time
+    '', // ResponseForEach holochain mattermost
+    '', // ResponseForEach diglife mattermost
+    'connorturland', // ResponseForEach telegram
+    '300', // ResponseForEach max time
+    'a+A=Agree, b+B=Block/c+C=Clock', // ResponseForEach options
     '', // SendMessageToAll holochain mattermost
     '', // SendMessageToAll diglife mattermost
     'connorturland', // SendMessageToAll telegram
@@ -18,45 +21,7 @@ const inputsFromSheets = [
 const convertedInputs = convertDataFromSheetToRSF(inputsFromSheets)
 console.log(convertedInputs)
 
-const inputs = [
-    {
-        inputType: {
-            process: 'CollectResponses ParticipantConfig',
-            port: 'in',
-        },
-        inputData: JSON.stringify([ { 'type': 'telegram', 'id': 'connorturland' }, { 'type': 'telegram', 'id': 'robert_best' } ])
-    },
-    {
-        inputType: {
-            process: 'rsf/CollectResponses_mbtdi',
-            port: 'prompt',
-        },
-        inputData: 'favourite web platforms?'
-    },
-    {
-        inputType: {
-            process: 'rsf/CollectResponses_mbtdi',
-            port: 'max_responses',
-        },
-        inputData: 3
-    },
-    {
-        inputType: {
-            process: 'rsf/CollectResponses_mbtdi',
-            port: 'max_time',
-        },
-        inputData: 600
-    },
-    {
-        inputType: {
-            process: 'SendMessageToAll ParticipantConfig',
-            port: 'in'
-        },
-        inputData: JSON.stringify([ { 'type': 'telegram', 'id': 'connorturland' }, { 'type': 'telegram', 'id': 'robert_best' } ])
-    }
-]
-
-const jsonGraph = getJsonGraph(convertedInputs)
+const jsonGraph = overrideJsonGraph(convertedInputs, 'collect-react-results.json')
 
 start(jsonGraph, process.env.ADDRESS, process.env.TOP_SECRET)
 

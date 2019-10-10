@@ -4,14 +4,14 @@ const app = express()
 
 app.use(express.json())
 
-const { getJsonGraph, start, convertDataFromSheetToRSF } = require('./run_graph.js')
+const { overrideJsonGraph, start, convertDataFromSheetToRSF } = require('./run_graph.js')
 
 app.post('/handle', function (req, res) {
     console.log('received a new request to run a graph')
     console.log('spreadsheet data', req.body.columns)
-    if (req.body.columns.length === 11) {
+    if (req.body.columns.length === 16 && req.body.columns.join('').length > 0) {
         const convertedInputs = convertDataFromSheetToRSF(req.body.columns)
-        const jsonGraph = getJsonGraph(convertedInputs)
+        const jsonGraph = overrideJsonGraph(convertedInputs, 'collect-react-results.json')
         start(jsonGraph, process.env.ADDRESS, process.env.TOP_SECRET)
     }
     res.sendStatus(200)
