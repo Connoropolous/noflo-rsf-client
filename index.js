@@ -96,15 +96,15 @@ const standUpRegisterPageAndGetResults = (mountPoint, maxTime, maxParticipants, 
                 return
             }
 
-            res.redirect(`${mountPoint}?success`)
             results.push({
                 id: input.id,
                 type: input.type,
                 name: input.name
             })
-            if (results.length === maxParticipants) {
+            if (results.length === maxParticipants || (isFacilitator && input.facilitator_complete === 'on')) {
                 complete()
             }
+            res.redirect(`${mountPoint}?success`)
         })
     })
 }

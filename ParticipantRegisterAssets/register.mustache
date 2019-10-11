@@ -83,10 +83,8 @@
 
 <body>
     <form action="{{mountPoint}}/new-participant" method="post">
+        <div id="notifier"></div>
         {{^registrationClosed}}
-            <div id="notifier">
-
-            </div>
             <div id="process-context">
                 You are invited to join a rapid sensemaking process.
                 <br />
@@ -147,11 +145,13 @@
 
         // do countdown
         const remainingDiv = document.getElementById('remaining_time')
-        let timeRemaining = parseInt(remainingDiv.innerText)
-        window.setInterval(() => {
-            timeRemaining--
-            remainingDiv.innerText = timeRemaining
-        }, 1000) // every 1 second
+        if (remainingDiv) {
+            let timeRemaining = parseInt(remainingDiv.innerText)
+            window.setInterval(() => {
+                timeRemaining--
+                remainingDiv.innerText = timeRemaining
+            }, 1000) // every 1 second
+        }
 
         function checkForSuccess(field) {
             const url = window.location.href;
@@ -197,19 +197,25 @@
         }
         document.getElementById('mattermost-username').onkeyup = updateIdForMattermost
         document.getElementById('mattermost-chat-server').onkeyup = updateIdForMattermost
+        document.getElementById('mattermost-username').onchange = updateIdForMattermost
+        document.getElementById('mattermost-chat-server').onchange = updateIdForMattermost
 
 
         // bind phone number fields event listeners
         // to update the hidden id field
-        document.getElementById('phone-number').onkeyup = (event) => {
-            document.getElementById('id').value = event.target.value
+        function updateIdForPhoneNumber() {
+            document.getElementById('id').value = document.getElementById('phone-number').value
         }
+        document.getElementById('phone-number').onkeyup = updateIdForPhoneNumber
+        document.getElementById('phone-number').onchange = updateIdForPhoneNumber
 
         // bind telegram fields event listeners
         // to update the hidden id field
-        document.getElementById('telegram-username').onkeyup = (event) => {
-            document.getElementById('id').value = event.target.value
+        function updateIdForTelegram() {
+            document.getElementById('id').value = document.getElementById('telegram-username').value
         }
+        document.getElementById('telegram-username').onkeyup = updateIdForTelegram
+        document.getElementById('telegram-username').onchange = updateIdForTelegram
     </script>
 </body>
 
