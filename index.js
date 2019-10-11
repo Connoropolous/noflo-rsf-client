@@ -11,6 +11,21 @@ app.engine('mustache', mustacheExpress())
 app.set('view engine', 'mustache')
 app.set('views', __dirname + '/ParticipantRegisterAssets')
 
+/* dev endpoint */
+app.get('/dev-register', (req, res) => {
+    res.render('register', {
+        mountPoint: '/test',
+        showParticipantBlock: true,
+        showTime: true,
+        remainingTime: 600,
+        maxParticipants: 3,
+        participantCount: 0,
+        processDescription: 'test',
+        isFacilitator: true,
+        registrationClosed: false
+    })
+})
+
 app.post('/handle', express.json(), function (req, res) {
     console.log('received a new request to run a graph')
     console.log('spreadsheet data', req.body.columns)
@@ -29,7 +44,9 @@ const validInput = (input) => {
     return true
 }
 const standUpRegisterPageAndGetResults = (mountPoint, maxTime, maxParticipants, isFacilitator, processDescription) => {
+    console.log('standing up new registration page at ' + mountPoint)
     return new Promise((resolve, reject) => {
+        const startTime = Date.now()
         const results = []
 
         // stop the process after a maximum amount of time
@@ -43,10 +60,9 @@ const standUpRegisterPageAndGetResults = (mountPoint, maxTime, maxParticipants, 
         let calledComplete = false
         const complete = () => {
             if (!calledComplete) {
+                console.log('closing registration for ' + mountPoint)
                 calledComplete = true
                 clearTimeout(timeoutId)
-                // give it enough time to send a response to the
-                // last registered participant
                 resolve(results)
             }
         }
@@ -54,15 +70,25 @@ const standUpRegisterPageAndGetResults = (mountPoint, maxTime, maxParticipants, 
         app.get(mountPoint, (req, res) => {
             res.render('register', {
                 mountPoint,
-                processDescription,
-                maxTime,
+                showParticipantBlock: true,
+                showTime: true,
+                remainingTime: (maxTime - (Date.now() - startTime) / 1000).toFixed(), // round it
                 maxParticipants,
-                isFacilitator
+                participantCount: results.length,
+                processDescription,
+                isFacilitator,
+                registrationClosed: calledComplete
             })
         })
 
         // setup web server... collect participant configs
         app.post(`${mountPoint}/new-participant`, express.urlencoded({ extended: true }), (req, res) => {
+            // registration has ended already?
+            if (calledComplete) {
+                res.sendStatus(403) // Forbidden
+                return
+            }
+
             const input = req.body
 
             if (!validInput(input)) {

@@ -42,7 +42,7 @@
             margin: 16px 0;
         }
 
-        form button, form input, form select {
+        form button, form input[type="text"], form select {
             margin-top: 8px;
             width: 100%;
         }
@@ -52,7 +52,7 @@
             display: block;
         }
 
-        form input {
+        form input[type="text"] {
             border-radius: 4px;
             border: none;
             padding: 8px;
@@ -83,43 +83,75 @@
 
 <body>
     <form action="{{mountPoint}}/new-participant" method="post">
-        <div id="notifier">
+        {{^registrationClosed}}
+            <div id="notifier">
 
-        </div>
-        <div id="process-context">
-            You are invited to join a rapid sensemaking process.
-            <br />
-            <br />
-            Once {{maxParticipants}} participants have registered, the process will begin.
-            <br />
-            <br />
-            {{processDescription}}
-        </div>
-        <div>
-            <label for="type">Contact Type</label>
-            <select id="type" name="type">
-                <option value="phone">Phone</option>
-                <option value="mattermost">Mattermost</option>
-            </select>
-        </div>
-        <div class="contactable-type show" id="phone">
-            <label for="phone-number">Number</label>
-            <input type="text" id="phone-number" name="phone-number" placeholder="+12223334444">
-        </div>
-        <div class="contactable-type" id="mattermost">
-            <label for="mattermost-username">Username</label>
-            <input type="text" id="mattermost-username" name="mattermost-username">
-            <label for="mattermost-chat-server">Chat Server URL</label>
-            <input type="text" id="mattermost-chat-server" name="mattermost-chat-server" placeholder="https://chat.server.org" value="https://">
-        </div>
-        <input type="hidden" id="id" name="id"></input>
-        <div class="button">
-            <button type="submit">Participate</button>
-        </div>
+            </div>
+            <div id="process-context">
+                You are invited to join a rapid sensemaking process.
+                <br />
+                <br />
+                {{#showParticipantBlock}}
+                    Registration is limited to {{maxParticipants}} participants.
+                    {{participantCount}} have registered so far.
+                    <br />
+                    <br />
+                {{/showParticipantBlock}}
+                {{#showTime}}
+                    Registration will remain open for another <span id="remaining_time">{{remainingTime}}</span> seconds.
+                    <br />
+                    <br />
+                {{/showTime}}
+                {{processDescription}}
+            </div>
+            <div>
+                <label for="type">Contact Type</label>
+                <select id="type" name="type">
+                    <option value="telegram">Telegram</option>
+                    <option value="phone">Phone</option>
+                    <option value="mattermost">Mattermost</option>
+                </select>
+            </div>
+            <div class="contactable-type" id="phone">
+                <label for="phone-number">Number</label>
+                <input type="text" id="phone-number" name="phone-number" placeholder="+12223334444">
+            </div>
+            <div class="contactable-type" id="mattermost">
+                <label for="mattermost-username">Username</label>
+                <input type="text" id="mattermost-username" name="mattermost-username">
+                <label for="mattermost-chat-server">Chat Server URL</label>
+                <input type="text" id="mattermost-chat-server" name="mattermost-chat-server" placeholder="https://chat.server.org" value="https://">
+            </div>
+            <div class="contactable-type show" id="telegram">
+                <label for="telegram-username">Username</label>
+                <input type="text" id="telegram-username" name="telegram-username" autofocus>
+            </div>
+            <input type="hidden" id="id" name="id"></input>
+            {{#isFacilitator}}
+                <label for="facilitator_complete">With this, I am finished registering participants</label>
+                <input type="checkbox" name="facilitator_complete">
+            {{/isFacilitator}}
+            <div class="button">
+                <button type="submit">Register</button>
+            </div>
+        {{/registrationClosed}}
+        {{#registrationClosed}}
+            <div id="process-context">
+                Registration for this process has closed.
+            </div>
+        {{/registrationClosed}}
     </form>
 
 
     <script>
+
+        // do countdown
+        const remainingDiv = document.getElementById('remaining_time')
+        let timeRemaining = parseInt(remainingDiv.innerText)
+        window.setInterval(() => {
+            timeRemaining--
+            remainingDiv.innerText = timeRemaining
+        }, 1000) // every 1 second
 
         function checkForSuccess(field) {
             const url = window.location.href;
@@ -170,6 +202,12 @@
         // bind phone number fields event listeners
         // to update the hidden id field
         document.getElementById('phone-number').onkeyup = (event) => {
+            document.getElementById('id').value = event.target.value
+        }
+
+        // bind telegram fields event listeners
+        // to update the hidden id field
+        document.getElementById('telegram-username').onkeyup = (event) => {
             document.getElementById('id').value = event.target.value
         }
     </script>
