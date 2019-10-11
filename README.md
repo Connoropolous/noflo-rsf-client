@@ -14,6 +14,7 @@ These flows can be designed and run on app.flowhub.io. You can then download the
 
 EXAMPLE .env
 ```
+URL=http://localhost:3002 # the url for which to connect to via websockets for 'clients' for ParticipantRegister
 PORT=3001 # the port to run this web server at
 TOP_SECRET=123asdfkj  # a scret value shared between a noflo client and noflo server
 ADDRESS=ws://some-noflo-server.com  # the websocket address of the noflo server
