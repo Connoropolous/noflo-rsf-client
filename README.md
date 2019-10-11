@@ -1,5 +1,7 @@
 # noflo-rsf-client
 
+- [ ] TODO: make 'is_facilitator' check box work to close out results for ParticipantRegister
+
 A simple nodejs express server, designed to handle webhook requests, and connect to a 'noflo runtime' in order to execute a configured flow-based programming graph.
 
 Has a `/handle` endpoint for receiving webhook requests from Google Scripts.
