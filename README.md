@@ -12,9 +12,9 @@ These flows can be designed and run on app.flowhub.io. You can then download the
 
 EXAMPLE .env
 ```
-PORT=3001
-TOP_SECRET=123asdfkj
-ADDRESS=ws://some-noflo-server.com
+PORT=3001 # the port to run this web server at
+TOP_SECRET=123asdfkj  # a scret value shared between a noflo client and noflo server
+ADDRESS=ws://some-noflo-server.com  # the websocket address of the noflo server
 ```
 
 
@@ -47,25 +47,8 @@ function onEdit(e) {
 }
 ```
 
-- In the script window, go to 'View' and check 'Show manifest file'
-- Open it using the file selector on the left
-- Add the following to it, in order to set the correct permission scopes
-
-**appsscript.json**
-```
-{
-  "timeZone": "America/New_York",
-  "dependencies": {
-  },
-  "oauthScopes": [
-    "https://www.googleapis.com/auth/script.external_request"
-  ],
-  "exceptionLogging": "STACKDRIVER"
-}
-```
-
 Useful links:
-- https://developers.google.com/apps-script/guides/triggers/events#edit
+- https://developers.google.com/apps-script/guides/triggers/events#form-submit
 - https://developers.google.com/apps-script/reference/spreadsheet/range#getValues()
 - https://developers.google.com/apps-script/guides/triggers/
 
@@ -78,7 +61,7 @@ Useful links:
     - Function: onEdit
     - Deployment: Head
     - Event Source: From spreadsheet
-    - Event Type: On edit
+    - Event Type: On form submit
 - Click 'Save'
 - Accept the authentication requests for your google account, to authorize it
 
