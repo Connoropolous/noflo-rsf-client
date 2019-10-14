@@ -1,6 +1,7 @@
 module.exports = {
 	VIEWS: {
-		REGISTER: 'register'
+		REGISTER: 'register',
+		RUN_GRAPH: 'run_graph'
 	},
 	URLS: {
 		DEV: {
@@ -8,7 +9,8 @@ module.exports = {
 		},
 		REGISTER: '/register',
 		HANDLE_REGISTER: pre => `${pre}/new-participant`,
-		RUN_GRAPH: '/handle'
+		RUN_GRAPH: '/',
+		HANDLE_RUN_GRAPH: '/handle' // TODO: change this
 	},
 	EVENTS: {
 		RECEIVE: {

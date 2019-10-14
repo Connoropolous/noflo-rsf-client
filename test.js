@@ -2,7 +2,6 @@ require('dotenv').config()
 const { start, overrideJsonGraph, convertDataFromSheetToRSF } = require('./run_graph')
 
 const inputsFromSheets = [
-    1234, // timestamp
     '', // 'connorturland', // CollectResponses holochain mattermost
     '', // 'connorturland', // CollectResponses diglife mattermost
     'connorturland', // CollectResponses telegram

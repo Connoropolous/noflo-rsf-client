@@ -4,24 +4,35 @@ const fbpGraph = require('fbp-graph')
 // https://flowbased.github.io/fbp-protocol/
 const fbpClient = require('fbp-client')
 const {
-    URLS
+    URLS,
+    VIEWS
 } = require('./constants')
 
-const addFormEndpoint = (app) => {
-    app.post(URLS.RUN_GRAPH, express.json(), function (req, res) {
+const addGraphEndpoints = (app) => {
+    app.get(URLS.RUN_GRAPH, function (req, res) {
+        res.render(VIEWS.RUN_GRAPH, {
+            formHandler: URLS.HANDLE_RUN_GRAPH
+        })
+    })
+
+    // form handler
+    app.post(URLS.HANDLE_RUN_GRAPH, express.urlencoded({ extended: true }), (req, res) => {
         console.log('received a new request to run a graph')
-        console.log('spreadsheet data', req.body.columns)
-        if (req.body.columns.length === 16 && req.body.columns.join('').length > 0) {
-            const convertedInputs = convertDataFromSheetToRSF(req.body.columns)
+        const inputs = Object.keys(req.body).map(key => {
+            return req.body[key]
+        })
+        console.log('form data', inputs)
+        if (inputs.join('').length > 0) {
+            const convertedInputs = convertDataFromSheetToRSF(inputs)
             const jsonGraph = overrideJsonGraph(convertedInputs, 'collect-react-results.json')
             start(jsonGraph, process.env.ADDRESS, process.env.TOP_SECRET)
         }
-        res.sendStatus(200)
+        res.status(200).send("Process Is Starting")
     })
 }
-module.exports.addFormEndpoint = addFormEndpoint
+module.exports.addGraphEndpoints = addGraphEndpoints
 
-async function start(jsonGraph, address, secret) {
+const start = async (jsonGraph, address, secret) => {
     const client = await fbpClient({
         address,
         protocol: 'websocket',
@@ -139,34 +150,32 @@ const convertDataFromSheetToRSF = (columnData) => {
     ]
 
     // all incoming data are strings
-    // index 0 is timestamp
-    // index 15 is feedback
     return inputsNeeded.map((inputType, index) => {
         let inputData
         switch (index) {
             case 0:
-                inputData = handleParticipantsData([1, 2, 3], columnData)
+                inputData = handleParticipantsData([0, 1, 2], columnData)
                 break
             case 1:
-                inputData = columnData[4]
+                inputData = columnData[3]
                 break
             case 2:
-                inputData = parseInt(columnData[5])
+                inputData = parseInt(columnData[4])
                 break
             case 3:
-                inputData = parseInt(columnData[6])
+                inputData = parseInt(columnData[5])
                 break
             case 4:
-                inputData = handleParticipantsData([7, 8, 9], columnData)
+                inputData = handleParticipantsData([6, 7, 8], columnData)
                 break
             case 5:
-                inputData = parseInt(columnData[10])
+                inputData = parseInt(columnData[9])
                 break
             case 6:
-                inputData = handleOptionsData(columnData[11])
+                inputData = handleOptionsData(columnData[10])
                 break
             case 7:
-                inputData = handleParticipantsData([12, 13, 14], columnData)
+                inputData = handleParticipantsData([11, 12, 13], columnData)
                 break
         }
         return {
@@ -178,7 +187,7 @@ const convertDataFromSheetToRSF = (columnData) => {
 module.exports.convertDataFromSheetToRSF = convertDataFromSheetToRSF
 
 const overrideJsonGraph = (inputs, filename) => {
-    const originalGraph = require(`./${filename}`)
+    const originalGraph = require(`./graphs/${filename}`)
 
     // most relevant connections are inputs
     const connections = originalGraph.connections.map(connection => {
