@@ -56,10 +56,12 @@ const standUpRegisterPageAndGetResults = (app, mountPoint, maxTime, maxParticipa
             }
         }
 
+        const formHandler = URLS.HANDLE_REGISTER(mountPoint)
+
         // route for serving the registration form page
         app.get(mountPoint, (req, res) => {
             res.render(VIEWS.REGISTER, {
-                mountPoint,
+                formHandler,
                 showParticipantBlock: true,
                 showTime: true,
                 remainingTime: (maxTime - (Date.now() - startTime) / 1000).toFixed(), // round it
@@ -72,7 +74,7 @@ const standUpRegisterPageAndGetResults = (app, mountPoint, maxTime, maxParticipa
         })
 
         // endpoint for handling form submits
-        app.post(URLS.HANDLE_REGISTER(mountPoint), express.urlencoded({ extended: true }), (req, res) => {
+        app.post(formHandler, express.urlencoded({ extended: true }), (req, res) => {
             // registration has ended already?
             if (calledComplete) {
                 res.sendStatus(403) // Forbidden
