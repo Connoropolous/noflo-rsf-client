@@ -6,20 +6,20 @@ const {
 } = require('./constants')
 
 const addTestDevPage = (app) => {
-	/* dev endpoint */
-	app.get(URLS.DEV.REGISTER, (req, res) => {
-		res.render(VIEWS.REGISTER, {
-			mountPoint: '/test',
-			showParticipantBlock: true,
-			showTime: true,
-			remainingTime: 600,
-			maxParticipants: 3,
-			participantCount: 0,
-			processDescription: 'test',
-			isFacilitator: true,
-			registrationClosed: false
-		})
-	})
+    /* dev endpoint */
+    app.get(URLS.DEV.REGISTER, (req, res) => {
+        res.render(VIEWS.REGISTER, {
+            mountPoint: '/test',
+            showParticipantBlock: true,
+            showTime: true,
+            remainingTime: 600,
+            maxParticipants: 3,
+            participantCount: 0,
+            processDescription: 'test',
+            isFacilitator: true,
+            registrationClosed: false
+        })
+    })
 }
 module.exports.addTestDevPage = addTestDevPage
 
@@ -101,30 +101,30 @@ const standUpRegisterPageAndGetResults = (app, mountPoint, maxTime, maxParticipa
 module.exports.standUpRegisterPageAndGetResults = standUpRegisterPageAndGetResults
 
 const guidGenerator = () => {
-    const S4 = () => (((1+Math.random())*0x10000)|0).toString(16).substring(1)
-    return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4())
+    const S4 = () => (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1)
+    return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4())
 }
 
 const addSocketListeners = (io, app) => {
-	io.on('connection', function(client) {
+    io.on('connection', function (client) {
 
         // handle participant register flow
-		client.on(EVENTS.RECEIVE.PARTICIPANT_REGISTER, async (data) => {
-			const mountPoint = `${URLS.DEV.REGISTER}/${guidGenerator()}`
-			const { isFacilitator, maxParticipants, maxTime, processDescription } = data
-			client.emit(EVENTS.SEND.PARTICIPANT_REGISTER_URL, process.env.URL + mountPoint)
-			const results = await standUpRegisterPageAndGetResults(
+        client.on(EVENTS.RECEIVE.PARTICIPANT_REGISTER, async (data) => {
+            const mountPoint = `${URLS.DEV.REGISTER}/${guidGenerator()}`
+            const { isFacilitator, maxParticipants, maxTime, processDescription } = data
+            client.emit(EVENTS.SEND.PARTICIPANT_REGISTER_URL, process.env.URL + mountPoint)
+            const results = await standUpRegisterPageAndGetResults(
                 app,
-				mountPoint,
-				maxTime,
-				maxParticipants,
-				isFacilitator,
-				processDescription
-			)
-			client.emit(EVENTS.SEND.PARTICIPANT_REGISTER_RESULTS, results)
-			client.disconnect()
+                mountPoint,
+                maxTime,
+                maxParticipants,
+                isFacilitator,
+                processDescription
+            )
+            client.emit(EVENTS.SEND.PARTICIPANT_REGISTER_RESULTS, results)
+            client.disconnect()
         })
 
-	})
+    })
 }
 module.exports.addSocketListeners = addSocketListeners
