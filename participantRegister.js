@@ -31,7 +31,7 @@ const validInput = (input) => {
     return true
 }
 
-const standUpRegisterPageAndGetResults = (app, mountPoint, maxTime, maxParticipants, isFacilitator, processDescription) => {
+const standUpRegisterPageAndGetResults = (app, mountPoint, maxTime, maxParticipants, isFacilitator, processDescription, eachNew = (newParticipant) => {}) => {
     console.log('standing up new registration page at ' + mountPoint)
     return new Promise((resolve, reject) => {
         // capture the process kickoff time for reference
@@ -86,11 +86,15 @@ const standUpRegisterPageAndGetResults = (app, mountPoint, maxTime, maxParticipa
                 return
             }
 
-            results.push({
+            const newParticipant = {
                 id: input.id,
                 type: input.type,
                 name: input.name
-            })
+            }
+            // add to final results
+            results.push(newParticipant)
+            // also call into callback with each new result
+            eachNew({ ...newParticipant }) // clone
             if (results.length === maxParticipants || (isFacilitator && input.facilitator_complete === 'on')) {
                 complete()
             }
@@ -111,7 +115,11 @@ const addSocketListeners = (io, app) => {
         // handle participant register flow
         client.on(EVENTS.RECEIVE.PARTICIPANT_REGISTER, async (data) => {
             const mountPoint = `${URLS.DEV.REGISTER}/${guidGenerator()}`
+
+            // take the configuration variables that come in as the request
             const { isFacilitator, maxParticipants, maxTime, processDescription } = data
+
+            // send the registration endpoint along early
             client.emit(EVENTS.SEND.PARTICIPANT_REGISTER_URL, process.env.URL + mountPoint)
             const results = await standUpRegisterPageAndGetResults(
                 app,
@@ -119,8 +127,13 @@ const addSocketListeners = (io, app) => {
                 maxTime,
                 maxParticipants,
                 isFacilitator,
-                processDescription
+                processDescription,
+                // forward each new registration live as well
+                (newParticipant) => {
+                    client.emit(EVENTS.SEND.PARTICIPANT_REGISTER_RESULT, newParticipant)
+                }
             )
+            // send the final results when we've got them
             client.emit(EVENTS.SEND.PARTICIPANT_REGISTER_RESULTS, results)
             client.disconnect()
         })
