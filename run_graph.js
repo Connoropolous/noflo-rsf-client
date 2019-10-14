@@ -1,7 +1,25 @@
+const express = require('express')
 const fbpGraph = require('fbp-graph')
 // https://github.com/flowbased/fbp-graph/blob/master/src/Graph.coffee
 // https://flowbased.github.io/fbp-protocol/
 const fbpClient = require('fbp-client')
+const {
+    URLS
+} = require('./constants')
+
+const addFormEndpoint = (app) => {
+    app.post(URLS.RUN_GRAPH, express.json(), function (req, res) {
+        console.log('received a new request to run a graph')
+        console.log('spreadsheet data', req.body.columns)
+        if (req.body.columns.length === 16 && req.body.columns.join('').length > 0) {
+            const convertedInputs = convertDataFromSheetToRSF(req.body.columns)
+            const jsonGraph = overrideJsonGraph(convertedInputs, 'collect-react-results.json')
+            start(jsonGraph, process.env.ADDRESS, process.env.TOP_SECRET)
+        }
+        res.sendStatus(200)
+    })
+}
+module.exports.addFormEndpoint = addFormEndpoint
 
 async function start(jsonGraph, address, secret) {
     const client = await fbpClient({
