@@ -125,7 +125,7 @@
             let timeRemaining = parseInt(node.innerText)
             let interval = window.setInterval(() => {
                 timeRemaining--
-                if (timeRemaining === 0) {
+                if (timeRemaining <= 0) {
                     node.parentNode.innerText = 'Registration has closed.'
                     window.clearInterval(interval)
                 } else {

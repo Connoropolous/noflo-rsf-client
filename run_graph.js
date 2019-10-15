@@ -118,7 +118,7 @@ const getParticipantConfigs = (formInput) => {
             stage: s,
             isFacilitator: formInput[`${s}-check-facil_register`] === 'facil_register',
             processContext: formInput[`${s}-ParticipantRegister-process_context`] || processContext,
-            maxTime: formInput[`${s}-ParticipantRegister-max_time`] || 300, // five minute default
+            maxTime: (formInput[`${s}-ParticipantRegister-max_time`] || 5) * 60, // five minute default, converted to seconds
             maxParticipants: formInput[`${s}-ParticipantRegister-max_participants`] || '*' // unlimited default
         }
     })
@@ -245,9 +245,11 @@ const convertDataFromSheetToRSF = (inputs, [ideationParticipants, reactionPartic
                 inputData = inputs[`${inputType.process}--${inputType.port}`]
                 break
             case 2: // max_responses
+                inputData = parseInt(inputs[`${inputType.process}--${inputType.port}`])
+                break
             case 3: // max_time
             case 5: // max_time
-                inputData = parseInt(inputs[`${inputType.process}--${inputType.port}`])
+                inputData = parseFloat(inputs[`${inputType.process}--${inputType.port}`]) * 60 // minutes, converted to seconds
                 break
             case 4:
                 inputData = handleParticipantsData(reactionParticipants)
