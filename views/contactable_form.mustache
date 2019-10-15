@@ -1,0 +1,104 @@
+
+<style>
+	.contactable-type {
+		display: none;
+	}
+
+	.show {
+		display: block;
+	}
+</style>
+
+<div class="contactable-form-wrapper">
+	<div>
+		<label for="type">Contact Type</label>
+		<select class="type" name="type">
+			<option value="telegram">Telegram</option>
+			<option value="phone">Phone</option>
+			<option value="mattermost">Mattermost</option>
+		</select>
+	</div>
+	<div class="contactable-type phone">
+		<label for="phone-number">Number</label>
+		<input type="text" class="phone-number" name="phone-number" placeholder="+12223334444">
+	</div>
+	<div class="contactable-type mattermost">
+		<label for="mattermost-username">Username</label>
+		<input type="text" class="mattermost-username" name="mattermost-username">
+		<label for="mattermost-chat-server">Chat Server URL</label>
+		<input type="text" class="mattermost-chat-server" name="mattermost-chat-server"
+			placeholder="https://chat.server.org" value="https://">
+	</div>
+	<div class="contactable-type telegram show">
+		<label for="telegram-username">Username</label>
+		<input type="text" class="telegram-username" name="telegram-username" autofocus>
+	</div>
+	<input type="hidden" class="id" name="id"></input>
+</div>
+
+<script>
+	
+	function clearAndSetupContactableFormListeners() {
+		// handle the onchange events for the 'type' select field
+		// toggling the display of particular form fields associated
+		// with that type
+		document.querySelectorAll('.type').forEach(node => {
+			const cb = (event) => {
+				// the type from the option value
+				const type = event.target.value
+				// hide all the other type form fields
+				const contactableFormWrapper = node.parentNode.parentNode
+				const nodes = contactableFormWrapper.querySelectorAll('.contactable-type')
+				nodes.forEach(n => {
+					n.classList.remove('show')
+				})
+				// show the form field for the selected type
+				contactableFormWrapper.querySelector(`.${type}`).classList.add('show')
+				// reset value
+				contactableFormWrapper.querySelector('.id').value = ''
+			}
+			node.removeEventListener('change', cb)
+			node.addEventListener('change', cb)
+		})
+
+		// bind mattermost fields event listeners
+		// to update the hidden id field
+		function updateIdForMattermost(event) {
+			const node = event.target
+			const contactableFormWrapper = node.parentNode.parentNode
+			const username = contactableFormWrapper.querySelector('.mattermost-username').value
+			const chatServer = contactableFormWrapper.querySelector('.mattermost-chat-server').value
+			contactableFormWrapper.querySelector('.id').value = `${username}@${chatServer}`
+		}
+		document.querySelectorAll('.mattermost-username').forEach(n => {
+			n.onkeyup = updateIdForMattermost
+			n.onchange = updateIdForMattermost
+		})
+		document.querySelectorAll('.mattermost-chat-server').forEach(n => {
+			n.onkeyup = updateIdForMattermost
+			n.onchange = updateIdForMattermost
+		})
+
+		function updateIdForTelegram(event) {
+			const node = event.target
+			const contactableFormWrapper = node.parentNode.parentNode
+			const value = contactableFormWrapper.querySelector('.telegram-username').value
+			contactableFormWrapper.querySelector('.id').value = value
+		}
+		document.querySelectorAll('.telegram-username').forEach(n => {
+			n.onkeyup = updateIdForTelegram
+			n.onchange = updateIdForTelegram
+		})
+
+		function updateIdForPhone(event) {
+			const node = event.target
+			const contactableFormWrapper = node.parentNode.parentNode
+			const value = contactableFormWrapper.querySelector('.phone-number').value
+			contactableFormWrapper.querySelector('.id').value = value
+		}
+		document.querySelectorAll('.phone-number').forEach(n => {
+			n.onkeyup = updateIdForPhone
+			n.onchange = updateIdForPhone
+		})
+	}
+</script>

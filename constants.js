@@ -1,16 +1,18 @@
 module.exports = {
 	VIEWS: {
 		REGISTER: 'register',
-		RUN_GRAPH: 'run_graph'
+		CONFIGURE_1: 'configure_1',
+		CONFIGURE_2: 'configure_2'
 	},
 	URLS: {
 		DEV: {
-			REGISTER: '/dev-register'
+			REGISTER: '/dev-register',
 		},
 		REGISTER: '/register',
 		HANDLE_REGISTER: pre => `${pre}/new-participant`,
-		RUN_GRAPH: '/',
-		HANDLE_RUN_GRAPH: '/handle' // TODO: change this
+		CONFIGURE_1: '/',
+		HANDLE_CONFIGURE_1: '/handle_configure_1',
+		CONFIGURE_2: '/configure/:processId'
 	},
 	EVENTS: {
 		RECEIVE: {

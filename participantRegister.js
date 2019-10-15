@@ -16,7 +16,6 @@ const addTestDevPage = (app) => {
             maxParticipants: 3,
             participantCount: 0,
             processDescription: 'test',
-            isFacilitator: true,
             registrationClosed: false
         })
     })
@@ -31,18 +30,27 @@ const validInput = (input) => {
     return true
 }
 
+const remainingTime = (maxTime, startTime) => {
+    return (maxTime - (Date.now() - startTime) / 1000).toFixed() // round it
+}
+module.exports.remainingTime = remainingTime
+
 const standUpRegisterPageAndGetResults = (app, mountPoint, maxTime, maxParticipants, isFacilitator, processDescription, eachNew = (newParticipant) => {}) => {
     console.log('standing up new registration page at ' + mountPoint)
     return new Promise((resolve, reject) => {
         // capture the process kickoff time for reference
         const startTime = Date.now()
-        const results = []
+        let results = []
 
-        // stop the process after a maximum amount of time
-        const timeoutId = setTimeout(() => {
-            // complete, saving whatever results we have
-            complete()
-        }, maxTime * 1000)
+
+        let timeoutId
+        if (!isFacilitator) {
+            // stop the process after a maximum amount of time
+            timeoutId = setTimeout(() => {
+                // complete, saving whatever results we have
+                complete()
+            }, maxTime * 1000)
+        }
 
         // setup a completion handler that
         // can only fire once
@@ -58,50 +66,72 @@ const standUpRegisterPageAndGetResults = (app, mountPoint, maxTime, maxParticipa
 
         const formHandler = URLS.HANDLE_REGISTER(mountPoint)
 
-        // route for serving the registration form page
-        app.get(mountPoint, (req, res) => {
-            res.render(VIEWS.REGISTER, {
-                formHandler,
-                showParticipantBlock: true,
-                showTime: true,
-                remainingTime: (maxTime - (Date.now() - startTime) / 1000).toFixed(), // round it
-                maxParticipants,
-                participantCount: results.length,
-                processDescription,
-                isFacilitator,
-                registrationClosed: calledComplete
+        if (isFacilitator) {
+            // bulk handler
+            // only mount a handler here
+            app.post(formHandler, express.json(), (req, res) => {
+                // registration has ended already?
+                if (calledComplete) {
+                    res.sendStatus(403) // Forbidden
+                    return
+                }
+                const { configs } = req.body
+                if (!configs.every(validInput)) {
+                    res.status(422).send(e) // Unprocessable Entity
+                } else {
+                    res.sendStatus(200) // Ok
+                    results = configs
+                    complete()
+                }
             })
-        })
+        } else {
+            // one by one handler
 
-        // endpoint for handling form submits
-        app.post(formHandler, express.urlencoded({ extended: true }), (req, res) => {
-            // registration has ended already?
-            if (calledComplete) {
-                res.sendStatus(403) // Forbidden
-                return
-            }
+            // route for serving the registration form page
+            app.get(mountPoint, (req, res) => {
+                res.render(VIEWS.REGISTER, {
+                    formHandler,
+                    showParticipantBlock: true,
+                    showTime: true,
+                    remainingTime: remainingTime(maxTime, startTime),
+                    maxParticipants,
+                    participantCount: results.length,
+                    processDescription,
+                    isFacilitator,
+                    registrationClosed: calledComplete
+                })
+            })
 
-            const input = req.body
+            // endpoint for handling form submits
+            app.post(formHandler, express.urlencoded({ extended: true }), (req, res) => {
+                // registration has ended already?
+                if (calledComplete) {
+                    res.sendStatus(403) // Forbidden
+                    return
+                }
 
-            if (!validInput(input)) {
-                res.redirect(`${mountPoint}?failure`)
-                return
-            }
+                const input = req.body
 
-            const newParticipant = {
-                id: input.id,
-                type: input.type,
-                name: input.name
-            }
-            // add to final results
-            results.push(newParticipant)
-            // also call into callback with each new result
-            eachNew({ ...newParticipant }) // clone
-            if (results.length === maxParticipants || (isFacilitator && input.facilitator_complete === 'on')) {
-                complete()
-            }
-            res.redirect(`${mountPoint}?success`)
-        })
+                if (!validInput(input)) {
+                    res.redirect(`${mountPoint}?failure`)
+                    return
+                }
+
+                const newParticipant = {
+                    id: input.id,
+                    type: input.type,
+                    name: input.name
+                }
+                // add to final results
+                results.push(newParticipant)
+                // also call into callback with each new result
+                eachNew({ ...newParticipant }) // clone
+                if (results.length === maxParticipants) {
+                    complete()
+                }
+                res.redirect(`${mountPoint}?success`)
+            })
+        }
     })
 }
 module.exports.standUpRegisterPageAndGetResults = standUpRegisterPageAndGetResults
@@ -110,13 +140,14 @@ const guidGenerator = () => {
     const S4 = () => (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1)
     return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4())
 }
+module.exports.guidGenerator = guidGenerator
 
 const addSocketListeners = (io, app) => {
     io.on('connection', function (client) {
 
         // handle participant register flow
         client.on(EVENTS.RECEIVE.PARTICIPANT_REGISTER, async (data) => {
-            const mountPoint = `${URLS.DEV.REGISTER}/${guidGenerator()}`
+            const mountPoint = `${URLS.REGISTER}/${guidGenerator()}`
 
             // take the configuration variables that come in as the request
             const { isFacilitator, maxParticipants, maxTime, processDescription } = data

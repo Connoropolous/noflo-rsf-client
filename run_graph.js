@@ -7,30 +7,138 @@ const {
     URLS,
     VIEWS
 } = require('./constants')
+const {
+    guidGenerator,
+    standUpRegisterPageAndGetResults,
+    remainingTime
+} = require('./participantRegister')
+
+// hold process awareness
+const processes = {}
 
 const addGraphEndpoints = (app) => {
-    app.get(URLS.RUN_GRAPH, function (req, res) {
-        res.render(VIEWS.RUN_GRAPH, {
-            formHandler: URLS.HANDLE_RUN_GRAPH
+    app.get(URLS.CONFIGURE_1, function (req, res) {
+        res.render(VIEWS.CONFIGURE_1, {
+            formHandler: URLS.HANDLE_CONFIGURE_1
         })
+    })
+
+    app.get(URLS.CONFIGURE_2, function (req, res) {
+        // load up the saved process at the given id
+        const config = processes[req.params.processId]
+        if (config) {
+            const keys = ['ideation', 'reaction', 'summary'].reduce((memo, value, index) => {
+                memo[`${value}IsFacilitator`] = config.participantConfigs[index].isFacilitator
+                memo[`${value}ShowParticipants`] = !!config[`${value}Participants`].length
+                // non facilitator keys
+                memo[`${value}Url`] = `${process.env.URL}${config.paths[index]}`
+                memo[`${value}RemainingTime`] = remainingTime(config.participantConfigs[index].maxTime, config.startTime)
+                // facilitator keys
+                memo[`${value}FormHandler`] = URLS.HANDLE_REGISTER(config.paths[index])
+                memo[`${value}ShowForm`] = config.participantConfigs[index].isFacilitator && config[`${value}Participants`].length === 0
+                return memo
+            }, {})
+            res.render(VIEWS.CONFIGURE_2, {
+                ...config,
+                ...keys
+            })
+        } else {
+            res.sendStatus(404)
+        }
     })
 
     // form handler
-    app.post(URLS.HANDLE_RUN_GRAPH, express.urlencoded({ extended: true }), (req, res) => {
-        console.log('received a new request to run a graph')
-        const inputs = Object.keys(req.body).map(key => {
-            return req.body[key]
+    app.post(URLS.HANDLE_CONFIGURE_1, express.urlencoded({ extended: true }), async (req, res) => {
+
+        const processId = guidGenerator()
+        const startTime = Date.now()
+
+        let participantConfigs = getParticipantConfigs(req.body)
+
+        // boot up participant config stages
+        const ideationPath = `${URLS.REGISTER}/${guidGenerator()}`
+        const reactionPath = `${URLS.REGISTER}/${guidGenerator()}`
+        const summaryPath = `${URLS.REGISTER}/${guidGenerator()}`
+        const paths = [ideationPath, reactionPath, summaryPath]
+
+        // save this process to memory
+        processes[processId] = {
+            startTime,
+            processId,
+            participantConfigs,
+            paths,
+            inputs: req.body,
+            ideationParticipants: [],
+            reactionParticipants: [],
+            summaryParticipants: []
+        }
+        
+        // capture the results for each as they come in
+        // do this in a non-blocking way
+        const callbacks = [
+            newP => { processes[processId].ideationParticipants.push(newP) },
+            newP => { processes[processId].reactionParticipants.push(newP) },
+            newP => { processes[processId].summaryParticipants.push(newP) }
+        ]
+        // capture the sum results for each
+        const promises = proceedWithParticipantConfig(app, paths, participantConfigs, callbacks)
+        promises[0].then(ideationParticipants => {
+            processes[processId].ideationParticipants = ideationParticipants
         })
-        console.log('form data', inputs)
-        if (inputs.join('').length > 0) {
-            const convertedInputs = convertDataFromSheetToRSF(inputs)
+        promises[1].then(reactionParticipants => {
+            processes[processId].reactionParticipants = reactionParticipants
+        })
+        promises[2].then(summaryParticipants => {
+            processes[processId].summaryParticipants = summaryParticipants
+        })
+        // once they're all ready, now commence the process
+        Promise.all(promises).then(participantArrays => {
+            // mark as running now
+            processes[processId].running = true
+            const convertedInputs = convertDataFromSheetToRSF(req.body, participantArrays)
             const jsonGraph = overrideJsonGraph(convertedInputs, 'collect-react-results.json')
             start(jsonGraph, process.env.ADDRESS, process.env.TOP_SECRET)
-        }
-        res.status(200).send("Process Is Starting")
+        })
+
+        console.log('created a new process configuration', processes[processId])
+        
+        res.redirect(URLS.CONFIGURE_2.replace(':processId', processId))
     })
 }
 module.exports.addGraphEndpoints = addGraphEndpoints
+
+const getParticipantConfigs = (formInput) => {
+    return ['CollectResponses', 'ResponseForEach', 'SendMessageToAll'].map((s, index) => {
+        let processContext
+        if (index === 0) processContext = 'Ideation'
+        else if (index === 1) processContext = 'Reaction'
+        else if (index === 2) processContext = 'Summary'
+
+        return {
+            stage: s,
+            isFacilitator: formInput[`${s}-check-facil_register`] === 'facil_register',
+            processContext: formInput[`${s}-ParticipantRegister-process_context`] || processContext,
+            maxTime: formInput[`${s}-ParticipantRegister-max_time`] || 300, // five minute default
+            maxParticipants: formInput[`${s}-ParticipantRegister-max_participants`] || '*' // unlimited default
+        }
+    })
+}
+module.exports.getParticipantConfigs = getParticipantConfigs
+
+const proceedWithParticipantConfig = (app, paths, participantConfigs, callbacks) => {
+    return paths.map((path, index) => {
+        return standUpRegisterPageAndGetResults(
+            app,
+            path,
+            participantConfigs[index].maxTime,
+            participantConfigs[index].maxParticipants,
+            participantConfigs[index].isFacilitator,
+            participantConfigs[index].processContext || processContext,
+            callbacks[index]
+        )
+    })
+}
+module.exports.proceedWithParticipantConfig = proceedWithParticipantConfig
 
 const start = async (jsonGraph, address, secret) => {
     const client = await fbpClient({
@@ -62,50 +170,27 @@ const start = async (jsonGraph, address, secret) => {
 module.exports.start = start
 
 // going into a 'makefunction' component, hence the 'return 'return'
-const handleParticipantsData = (threeColumnIndexes, columnData) => {
-
-    const splitFilterMap = (userlist, idFunc) => {
-        return userlist
-            .split('\n')
-            .filter(username => username.length > 0)
-            .map(idFunc)
-    }
-
-    const participants = threeColumnIndexes.reduce((memo, columnIndex, currentIndex) => {
-        let idFunc
-        if (currentIndex === 0) {
-            idFunc = (username) => ({ type: 'mattermost', id: `${username}@https://chat.holochain.org` })
-        } else if (currentIndex === 1) {
-            idFunc = (username) => ({ type: 'mattermost', id: `${username}@https://chat.diglife.org` })
-        } else if (currentIndex === 2) {
-            idFunc = username => ({ type: 'telegram', id: username })
-        }
-        const participants = splitFilterMap(columnData[columnIndex], idFunc)
-        return memo.concat(participants)
-    }, [])
-
+const handleParticipantsData = (participants) => {
     return 'return ' + JSON.stringify(participants)
 }
 
 // going into a 'makefunction' component, hence the 'return 'return'
 const handleOptionsData = (optionsData) => {
-    // e.g. a+A=Agree, b+B=Block/c+C=Clock
-    let options = []
-    optionsData
+    // e.g. a+A=Agree, b+B=Block, c+C=Clock
+    let options = optionsData
         .split(',')
-        .forEach(s => {
-            s.trim().split('/').forEach(o => {
-                const [triggers, text] = o.split('=')
-                options.push({
-                    triggers: triggers.split('+'),
-                    text
-                })
-            })
+        .map(s => {
+            // trim cleans white space
+            const [triggers, text] = s.trim().split('=')
+            return {
+                triggers: triggers.split('+'),
+                text
+            }
         })
     return 'return ' + JSON.stringify(options)
 }
 
-const convertDataFromSheetToRSF = (columnData) => {
+const convertDataFromSheetToRSF = (inputs, [ideationParticipants, reactionParticipants, summaryParticipants]) => {
     const inputsNeeded = [
         // 0
         {
@@ -139,7 +224,7 @@ const convertDataFromSheetToRSF = (columnData) => {
         },
         // 6
         {
-            process: "Reaction Options",
+            process: "ReactionOptions",
             port: "function"
         },
         // 7
@@ -154,28 +239,24 @@ const convertDataFromSheetToRSF = (columnData) => {
         let inputData
         switch (index) {
             case 0:
-                inputData = handleParticipantsData([0, 1, 2], columnData)
+                inputData = handleParticipantsData(ideationParticipants)
                 break
             case 1:
-                inputData = columnData[3]
+                inputData = inputs[`${inputType.process}--${inputType.port}`]
                 break
-            case 2:
-                inputData = parseInt(columnData[4])
-                break
-            case 3:
-                inputData = parseInt(columnData[5])
+            case 2: // max_responses
+            case 3: // max_time
+            case 5: // max_time
+                inputData = parseInt(inputs[`${inputType.process}--${inputType.port}`])
                 break
             case 4:
-                inputData = handleParticipantsData([6, 7, 8], columnData)
-                break
-            case 5:
-                inputData = parseInt(columnData[9])
+                inputData = handleParticipantsData(reactionParticipants)
                 break
             case 6:
-                inputData = handleOptionsData(columnData[10])
+                inputData = handleOptionsData(inputs[`${inputType.process}--${inputType.port}`])
                 break
             case 7:
-                inputData = handleParticipantsData([11, 12, 13], columnData)
+                inputData = handleParticipantsData(summaryParticipants)
                 break
         }
         return {

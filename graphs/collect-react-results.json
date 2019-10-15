@@ -80,10 +80,10 @@
                 "height": 72
             }
         },
-        "Reaction Options": {
+        "ReactionOptions": {
             "component": "core/MakeFunction",
             "metadata": {
-                "label": "Reaction Options",
+                "label": "ReactionOptions",
                 "x": 468,
                 "y": 144,
                 "width": 72,
@@ -226,7 +226,7 @@
         },
         {
             "src": {
-                "process": "Reaction Options",
+                "process": "ReactionOptions",
                 "port": "out"
             },
             "tgt": {
@@ -321,7 +321,7 @@
         {
             "data": "x",
             "tgt": {
-                "process": "Reaction Options",
+                "process": "ReactionOptions",
                 "port": "in"
             }
         },
@@ -356,7 +356,7 @@
         {
             "data": "return [{triggers: ['a', 'A'], text: 'Agree' }, {triggers: ['d', 'D'], text: 'Disagree' }]",
             "tgt": {
-                "process": "Reaction Options",
+                "process": "ReactionOptions",
                 "port": "function"
             }
         },

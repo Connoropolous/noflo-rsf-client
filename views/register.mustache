@@ -47,39 +47,10 @@
             {{#showTime}}
             <p>Registration will remain open for another <span id="remaining_time">{{remainingTime}}</span> seconds.</p>
             {{/showTime}}
-            <h4>Facilitator Provided Description</h4>
+            <h4>Process Description</h4>
             <p>{{processDescription}}</p>
         </div>
-        <div>
-            <label for="type">Contact Type</label>
-            <select id="type" name="type">
-                <option value="telegram">Telegram</option>
-                <option value="phone">Phone</option>
-                <option value="mattermost">Mattermost</option>
-            </select>
-        </div>
-        <div class="contactable-type" id="phone">
-            <label for="phone-number">Number</label>
-            <input type="text" id="phone-number" name="phone-number" placeholder="+12223334444">
-        </div>
-        <div class="contactable-type" id="mattermost">
-            <label for="mattermost-username">Username</label>
-            <input type="text" id="mattermost-username" name="mattermost-username">
-            <label for="mattermost-chat-server">Chat Server URL</label>
-            <input type="text" id="mattermost-chat-server" name="mattermost-chat-server"
-                placeholder="https://chat.server.org" value="https://">
-        </div>
-        <div class="contactable-type show" id="telegram">
-            <label for="telegram-username">Username</label>
-            <input type="text" id="telegram-username" name="telegram-username" autofocus>
-        </div>
-        <input type="hidden" id="id" name="id"></input>
-        {{#isFacilitator}}
-        <div class="float-right">
-            <input type="checkbox" name="facilitator_complete">
-            <label class="label-inline" for="facilitator_complete">Last Registration</label>
-        </div>
-        {{/isFacilitator}}
+        {{> contactable_form }}
         <button class="button" type="submit">Register</button>
         {{/registrationClosed}}
         {{#registrationClosed}}
@@ -98,7 +69,12 @@
             let timeRemaining = parseInt(remainingDiv.innerText)
             window.setInterval(() => {
                 timeRemaining--
-                remainingDiv.innerText = timeRemaining
+                if (timeRemaining === 0) {
+                    remainingDiv.parentNode.innerText = 'Registration has closed.'
+                    window.clearInterval(interval)
+                } else {
+                    remainingDiv.innerText = timeRemaining
+                }
             }, 1000) // every 1 second
         }
 
@@ -121,50 +97,8 @@
             document.getElementById('notifier').innerText = 'The input is invalid'
         }
 
-        // handle the onchange events for the 'type' select field
-        // toggling the display of particular form fields associated
-        // with that type
-        document.getElementById('type').onchange = event => {
-            // the type from the option value
-            const type = event.target.value
-
-            // hide all the other type form fields
-            const nodes = document.getElementsByClassName('contactable-type')
-            for (let i = 0; nodes[i]; i++) {
-                nodes[i].classList.remove('show')
-            }
-            // show the form field for the selected type
-            nodes[type].classList.add('show')
-        }
-
-        // bind mattermost fields event listeners
-        // to update the hidden id field
-        function updateIdForMattermost() {
-            const username = document.getElementById('mattermost-username').value
-            const chatServer = document.getElementById('mattermost-chat-server').value
-            document.getElementById('id').value = `${username}@${chatServer}`
-        }
-        document.getElementById('mattermost-username').onkeyup = updateIdForMattermost
-        document.getElementById('mattermost-chat-server').onkeyup = updateIdForMattermost
-        document.getElementById('mattermost-username').onchange = updateIdForMattermost
-        document.getElementById('mattermost-chat-server').onchange = updateIdForMattermost
-
-
-        // bind phone number fields event listeners
-        // to update the hidden id field
-        function updateIdForPhoneNumber() {
-            document.getElementById('id').value = document.getElementById('phone-number').value
-        }
-        document.getElementById('phone-number').onkeyup = updateIdForPhoneNumber
-        document.getElementById('phone-number').onchange = updateIdForPhoneNumber
-
-        // bind telegram fields event listeners
-        // to update the hidden id field
-        function updateIdForTelegram() {
-            document.getElementById('id').value = document.getElementById('telegram-username').value
-        }
-        document.getElementById('telegram-username').onkeyup = updateIdForTelegram
-        document.getElementById('telegram-username').onchange = updateIdForTelegram
+        // from contactable_form.mustache
+        clearAndSetupContactableFormListeners()
     </script>
 </body>
 
