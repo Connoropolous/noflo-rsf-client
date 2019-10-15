@@ -79,46 +79,6 @@
                 "width": 72,
                 "height": 72
             }
-        },
-        "ReactionOptions": {
-            "component": "core/MakeFunction",
-            "metadata": {
-                "label": "ReactionOptions",
-                "x": 468,
-                "y": 144,
-                "width": 72,
-                "height": 72
-            }
-        },
-        "CollectResponsesPeople": {
-            "component": "core/MakeFunction",
-            "metadata": {
-                "label": "CollectResponsesPeople",
-                "x": 252,
-                "y": 288,
-                "width": 72,
-                "height": 72
-            }
-        },
-        "ResponseForEachPeople": {
-            "component": "core/MakeFunction",
-            "metadata": {
-                "label": "ResponseForEachPeople",
-                "x": 468,
-                "y": 288,
-                "width": 72,
-                "height": 72
-            }
-        },
-        "SendMessageToAllPeople": {
-            "component": "core/MakeFunction",
-            "metadata": {
-                "label": "SendMessageToAllPeople",
-                "x": 1152,
-                "y": 288,
-                "width": 72,
-                "height": 72
-            }
         }
     },
     "connections": [
@@ -153,6 +113,19 @@
             },
             "tgt": {
                 "process": "rsf/ResponseForEach_cd3dx",
+                "port": "bot_configs"
+            },
+            "metadata": {
+                "route": 10
+            }
+        },
+        {
+            "src": {
+                "process": "strings/ParseJson_o9z2t",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "rsf/SendMessageToAll_xil86",
                 "port": "bot_configs"
             },
             "metadata": {
@@ -200,19 +173,6 @@
         },
         {
             "src": {
-                "process": "strings/ParseJson_o9z2t",
-                "port": "out"
-            },
-            "tgt": {
-                "process": "rsf/SendMessageToAll_xil86",
-                "port": "bot_configs"
-            },
-            "metadata": {
-                "route": 10
-            }
-        },
-        {
-            "src": {
                 "process": "rsf/CollectResponses_lctpp",
                 "port": "results"
             },
@@ -222,58 +182,6 @@
             },
             "metadata": {
                 "route": 4
-            }
-        },
-        {
-            "src": {
-                "process": "ReactionOptions",
-                "port": "out"
-            },
-            "tgt": {
-                "process": "rsf/ResponseForEach_cd3dx",
-                "port": "options"
-            },
-            "metadata": {
-                "route": 2
-            }
-        },
-        {
-            "src": {
-                "process": "CollectResponsesPeople",
-                "port": "out"
-            },
-            "tgt": {
-                "process": "rsf/CollectResponses_lctpp",
-                "port": "contactable_configs"
-            },
-            "metadata": {
-                "route": 6
-            }
-        },
-        {
-            "src": {
-                "process": "ResponseForEachPeople",
-                "port": "out"
-            },
-            "tgt": {
-                "process": "rsf/ResponseForEach_cd3dx",
-                "port": "contactable_configs"
-            },
-            "metadata": {
-                "route": 6
-            }
-        },
-        {
-            "src": {
-                "process": "SendMessageToAllPeople",
-                "port": "out"
-            },
-            "tgt": {
-                "process": "rsf/SendMessageToAll_xil86",
-                "port": "contactable_configs"
-            },
-            "metadata": {
-                "route": 6
             }
         },
         {
@@ -312,20 +220,6 @@
             }
         },
         {
-            "data": "x",
-            "tgt": {
-                "process": "CollectResponsesPeople",
-                "port": "in"
-            }
-        },
-        {
-            "data": "x",
-            "tgt": {
-                "process": "ReactionOptions",
-                "port": "in"
-            }
-        },
-        {
             "data": "What are your favourite artsists?",
             "tgt": {
                 "process": "rsf/CollectResponses_lctpp",
@@ -333,45 +227,31 @@
             }
         },
         {
-            "data": "return [{ type: 'telegram', id: 'connorturland' }, { type: 'mattermost', id: 'connorturland@https://chat.holochain.org' }]",
+            "data": [{ "type": "telegram", "id": "connorturland" }, { "type": "mattermost", "id": "connorturland@https://chat.holochain.org" }],
             "tgt": {
-                "process": "CollectResponsesPeople",
-                "port": "function"
+                "process": "rsf/CollectResponses_lctpp",
+                "port": "contactable_configs"
             }
         },
         {
-            "data": "return [{ type: 'telegram', id: 'connorturland' }, { type: 'mattermost', id: 'connorturland@https://chat.holochain.org' }]",
+            "data": [{ "type": "telegram", "id": "connorturland" }, { "type": "mattermost", "id": "connorturland@https://chat.holochain.org" }],
             "tgt": {
-                "process": "ResponseForEachPeople",
-                "port": "function"
+                "process": "rsf/ResponseForEach_cd3dx",
+                "port": "contactable_configs"
             }
         },
         {
-            "data": "return [{ type: 'telegram', id: 'connorturland' }, { type: 'mattermost', id: 'connorturland@https://chat.holochain.org' }]",
+            "data": [{ "type": "telegram", "id": "connorturland" }, { "type": "mattermost", "id": "connorturland@https://chat.holochain.org" }],
             "tgt": {
-                "process": "SendMessageToAllPeople",
-                "port": "function"
+                "process": "rsf/SendMessageToAll_xil86",
+                "port": "contactable_configs"
             }
         },
         {
-            "data": "return [{triggers: ['a', 'A'], text: 'Agree' }, {triggers: ['d', 'D'], text: 'Disagree' }]",
+            "data": [{"triggers": ["a", "A"], "text": "Agree" }, {"triggers": ["d", "D"], "text": "Disagree" }],
             "tgt": {
-                "process": "ReactionOptions",
-                "port": "function"
-            }
-        },
-        {
-            "data": "x",
-            "tgt": {
-                "process": "ResponseForEachPeople",
-                "port": "in"
-            }
-        },
-        {
-            "data": "x",
-            "tgt": {
-                "process": "SendMessageToAllPeople",
-                "port": "in"
+                "process": "rsf/ResponseForEach_cd3dx",
+                "port": "options"
             }
         }
     ]

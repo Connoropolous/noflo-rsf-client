@@ -170,14 +170,9 @@ const start = async (jsonGraph, address, secret) => {
 module.exports.start = start
 
 // going into a 'makefunction' component, hence the 'return 'return'
-const handleParticipantsData = (participants) => {
-    return 'return ' + JSON.stringify(participants)
-}
-
-// going into a 'makefunction' component, hence the 'return 'return'
 const handleOptionsData = (optionsData) => {
     // e.g. a+A=Agree, b+B=Block, c+C=Clock
-    let options = optionsData
+    return optionsData
         .split(',')
         .map(s => {
             // trim cleans white space
@@ -187,15 +182,14 @@ const handleOptionsData = (optionsData) => {
                 text
             }
         })
-    return 'return ' + JSON.stringify(options)
 }
 
 const convertDataFromSheetToRSF = (inputs, [ideationParticipants, reactionParticipants, summaryParticipants]) => {
     const inputsNeeded = [
         // 0
         {
-            process: 'CollectResponsesPeople',
-            port: 'function',
+            process: 'rsf/CollectResponses_lctpp',
+            port: 'contactable_configs',
         },
         // 1
         {
@@ -214,8 +208,8 @@ const convertDataFromSheetToRSF = (inputs, [ideationParticipants, reactionPartic
         },
         // 4
         {
-            process: 'ResponseForEachPeople',
-            port: 'function',
+            process: 'rsf/ResponseForEach_cd3dx',
+            port: 'contactable_configs',
         },
         // 5
         {
@@ -224,13 +218,13 @@ const convertDataFromSheetToRSF = (inputs, [ideationParticipants, reactionPartic
         },
         // 6
         {
-            process: "ReactionOptions",
-            port: "function"
+            process: "rsf/ResponseForEach_cd3dx",
+            port: "options"
         },
         // 7
         {
-            process: 'SendMessageToAllPeople',
-            port: 'function'
+            process: 'rsf/SendMessageToAll_xil86',
+            port: 'contactable_configs'
         }
     ]
 
@@ -239,7 +233,7 @@ const convertDataFromSheetToRSF = (inputs, [ideationParticipants, reactionPartic
         let inputData
         switch (index) {
             case 0:
-                inputData = handleParticipantsData(ideationParticipants)
+                inputData = ideationParticipants
                 break
             case 1:
                 inputData = inputs[`${inputType.process}--${inputType.port}`]
@@ -252,13 +246,13 @@ const convertDataFromSheetToRSF = (inputs, [ideationParticipants, reactionPartic
                 inputData = parseFloat(inputs[`${inputType.process}--${inputType.port}`]) * 60 // minutes, converted to seconds
                 break
             case 4:
-                inputData = handleParticipantsData(reactionParticipants)
+                inputData = reactionParticipants
                 break
             case 6:
                 inputData = handleOptionsData(inputs[`${inputType.process}--${inputType.port}`])
                 break
             case 7:
-                inputData = handleParticipantsData(summaryParticipants)
+                inputData = summaryParticipants
                 break
         }
         return {

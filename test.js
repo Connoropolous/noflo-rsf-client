@@ -1,23 +1,19 @@
 require('dotenv').config()
 const { start, overrideJsonGraph, convertDataFromSheetToRSF } = require('./run_graph')
 
-const inputsFromSheets = [
-    '', // 'connorturland', // CollectResponses holochain mattermost
-    '', // 'connorturland', // CollectResponses diglife mattermost
-    'connorturland', // CollectResponses telegram
-    'sheets test prompt', // CollectResponses prompt
-    '3', // CollectResponses max responses
-    '300', // CollectResponses max time
-    '', // ResponseForEach holochain mattermost
-    '', // ResponseForEach diglife mattermost
-    'connorturland', // ResponseForEach telegram
-    '300', // ResponseForEach max time
-    'a+A=Agree, b+B=Block/c+C=Clock', // ResponseForEach options
-    '', // SendMessageToAll holochain mattermost
-    '', // SendMessageToAll diglife mattermost
-    'connorturland', // SendMessageToAll telegram
+const inputsFromSheets = {
+    'rsf/CollectResponses_lctpp--prompt': 'npm run test prompt', // CollectResponses prompt
+    'rsf/CollectResponses_lctpp--max_responses': '3', // CollectResponses max responses
+    'rsf/CollectResponses_lctpp--max_time': '1', // CollectResponses max time (minutes)
+    'rsf/ResponseForEach_cd3dx--max_time': '1', // ResponseForEach max time (minutes)
+    'rsf/ResponseForEach_cd3dx--options': 'a+A=Agree, b+B=Block, c+C=Clock', // ResponseForEach options
+}
+const participantConfigs = [
+    [ { type: 'telegram', id: 'connorturland' }], // ideation
+    [ { type: 'telegram', id: 'connorturland' }], // reaction
+    [ { type: 'telegram', id: 'connorturland' }] // summary
 ]
-const convertedInputs = convertDataFromSheetToRSF(inputsFromSheets)
+const convertedInputs = convertDataFromSheetToRSF(inputsFromSheets, participantConfigs)
 console.log(convertedInputs)
 
 const jsonGraph = overrideJsonGraph(convertedInputs, 'collect-react-results.json')

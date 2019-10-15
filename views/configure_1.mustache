@@ -71,16 +71,16 @@
         <h2>Ideation Stage</h2>
         <p>At this stage, each participant will be asked to provide responses to a given prompt, defined in this form, and limited to the number of responses set here, and the amount of time.</p>
         <div>
-            <label for="rsf/CollectResponses_lctpp--prompt" id="rsf/CollectResponses_lctpp--prompt">What is the prompt you would like to give participants, to reflect on and respond to?</label>
+            <label for="rsf/CollectResponses_lctpp--prompt">What is the prompt you would like to give participants, to reflect on and respond to?</label>
             <textarea id="rsf/CollectResponses_lctpp--prompt" name="rsf/CollectResponses_lctpp--prompt"
                 placeholder="What is your definition of Collective Intelligence?"></textarea>
         </div>
         <div>
-            <label for="rsf/CollectResponses_lctpp--max_responses" id="rsf/CollectResponses_lctpp--max_responses">What is the maximum number of responses you would like to allow from each participant?</label>
+            <label for="rsf/CollectResponses_lctpp--max_responses">What is the maximum number of responses you would like to allow from each participant?</label>
             <input type="text" id="rsf/CollectResponses_lctpp--max_responses" name="rsf/CollectResponses_lctpp--max_responses">
         </div>
         <div>
-            <label for="rsf/CollectResponses_lctpp--max_time" id="rsf/CollectResponses_lctpp--max_time">How many minutes would you like to leave for participants to submit their responses?</label>
+            <label for="rsf/CollectResponses_lctpp--max_time">How many minutes would you like to leave for participants to submit their responses?</label>
             <input type="text" id="rsf/CollectResponses_lctpp--max_time" name="rsf/CollectResponses_lctpp--max_time">
         </div>
         <div id="CollectResponses_ParticipantRegister">
@@ -103,12 +103,12 @@
         <h2>Reaction Stage</h2>
         <p>At this stage, check for the reactions (Agree, Disagree) of particular people about the statements ideated in the first stage.</p>
         <div>
-            <label for="rsf/ResponseForEach_cd3dx--max_time" id="rsf/ResponseForEach_cd3dx--max_time">How many minutes would you like to leave for participants to submit their reactions?</label>
+            <label for="rsf/ResponseForEach_cd3dx--max_time">How many minutes would you like to leave for participants to submit their reactions?</label>
             <input type="text" id="rsf/ResponseForEach_cd3dx--max_time" name="rsf/ResponseForEach_cd3dx--max_time">
         </div>
         <div>
-            <label for="ReactionOptions--function" id="ReactionOptions--function">What are the options you'd like to give participants to react with? Add custom ones by adding options in the format of "b+B=Block, c+C=Clock" where "b+B" are the 'triggers' that people type, and "Block" is the thing they are choosing, and ", " is the separator.</label>
-            <textarea id="ReactionOptions--function" name="ReactionOptions--function">a+A=Agree, d+D=Disagree, p+P=Pass</textarea>
+            <label for="rsf/ResponseForEach_cd3dx--options">What are the options you'd like to give participants to react with? Add custom ones by adding options in the format of "b+B=Block, c+C=Clock" where "b+B" are the 'triggers' that people type, and "Block" is the thing they are choosing, and ", " is the separator.</label>
+            <textarea id="rsf/ResponseForEach_cd3dx--options" name="rsf/ResponseForEach_cd3dx--options">a+A=Agree, d+D=Disagree, p+P=Pass</textarea>
         </div>
         <div id="ResponseForEach_ParticipantRegister">
             <input type="radio" value="facil_register" id="ResponseForEach-check-facil_register" name="ResponseForEach-check-facil_register" v-model="register_selection">
