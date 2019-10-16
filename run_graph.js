@@ -180,26 +180,27 @@ const start = async (jsonGraph, address, secret, dataWatcher = (signal) => {}) =
                 await client.protocol.network.start({
                     graph: graph.name,
                 })
-                // forward each network data signal for this specific graph
-                client.on('network', signal => {
-                    if (signal.command === 'data' && signal.payload.graph === graph.name) {
-                        // just forward the payload itself, as other meta is assumed
-                        dataWatcher(signal.payload)
-                    }
-                })
-                // we receive two useful things here:
-                // DATA signals, and STOPPED signal, oh and ERROR signals
-                // console.log(signals)
-                const signals = await observer.until(['network:stopped'], ['network:error', 'network:processerror'])
-
-                const stopped = signals.find(signal => signal.command === 'stopped' && signal.payload.graph === graph.name)
-                const error = signals.find(signal => signal.command === 'error' && signal.payload.graph === graph.name)
-                const processError = signals.find(signal => signal.command === 'processerror' && signal.payload.graph === graph.name)
-                if (stopped) resolve()
-                else reject(error || processError)
             } catch (e) {
-                reject(e)
+                console.log(e)
+                if (e !== 'network:start timed out') reject(e)
+                // ignore network:start timed out error, it still starts
             }
+            // forward each network data signal for this specific graph
+            client.on('network', signal => {
+                if (signal.command === 'data' && signal.payload.graph === graph.name) {
+                    // just forward the payload itself, as other meta is assumed
+                    dataWatcher(signal.payload)
+                }
+            })
+            // we receive two useful things here:
+            // DATA signals, and STOPPED signal, oh and ERROR signals
+            // console.log(signals)
+            const signals = await observer.until(['network:stopped'], ['network:error', 'network:processerror'])
+            const stopped = signals.find(signal => signal.command === 'stopped' && signal.payload.graph === graph.name)
+            const error = signals.find(signal => signal.command === 'error' && signal.payload.graph === graph.name)
+            const processError = signals.find(signal => signal.command === 'processerror' && signal.payload.graph === graph.name)
+            if (stopped) resolve()
+            else reject(error || processError)
         })
     })
 }
