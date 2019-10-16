@@ -164,6 +164,8 @@ const start = async (jsonGraph, address, secret, dataWatcher = (signal) => {}) =
         address,
         protocol: 'websocket',
         secret
+    }, {
+        commandTimeout: 5000
     })
     await client.connect()
     return new Promise((resolve, reject) => {
@@ -181,7 +183,7 @@ const start = async (jsonGraph, address, secret, dataWatcher = (signal) => {}) =
                     graph: graph.name,
                 })
             } catch (e) {
-                if (e.message !== 'Error: network:start timed out') reject(e)
+                if (e.toString() !== 'Error: network:start timed out') reject(e)
                 // ignore network:start timed out error, it still starts
             }
             // forward each network data signal for this specific graph
