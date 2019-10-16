@@ -181,7 +181,7 @@ const start = async (jsonGraph, address, secret, dataWatcher = (signal) => {}) =
                     graph: graph.name,
                 })
             } catch (e) {
-                if (e !== 'Error: network:start timed out') reject(e)
+                if (e.message !== 'Error: network:start timed out') reject(e)
                 // ignore network:start timed out error, it still starts
             }
             // forward each network data signal for this specific graph
