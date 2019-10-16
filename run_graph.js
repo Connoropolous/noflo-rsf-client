@@ -61,8 +61,9 @@ const addGraphEndpoints = (app) => {
         const summaryPath = `${URLS.REGISTER}/${guidGenerator()}`
         const paths = [ideationPath, reactionPath, summaryPath]
 
-        // save this process to memory
+        // save this process to memory (used to control rendering of the template)
         processes[processId] = {
+            configuring: true,
             startTime,
             processId,
             participantConfigs,
@@ -94,10 +95,25 @@ const addGraphEndpoints = (app) => {
         // once they're all ready, now commence the process
         Promise.all(promises).then(participantArrays => {
             // mark as running now
+            processes[processId].configuring = false
             processes[processId].running = true
             const convertedInputs = convertDataFromSheetToRSF(req.body, participantArrays)
             const jsonGraph = overrideJsonGraph(convertedInputs, 'collect-react-results.json')
-            start(jsonGraph, process.env.ADDRESS, process.env.TOP_SECRET)
+            const dataWatcher = (signal) => {
+                if (signal.id === 'rsf/FormatReactionsList_cukq9() FORMATTED -> IN core/MakeFunction_lsxgf()') {
+                    // save the results to the process
+                    processes[processId].results = signal.data
+                }
+            }
+            start(jsonGraph, process.env.ADDRESS, process.env.TOP_SECRET, dataWatcher)
+                .then(() => {
+                    processes[processId].running = false
+                    processes[processId].complete = true
+                }) // logs and save to memory
+                .catch((e) => {
+                    processes[processId].running = false
+                    processes[processId].error = e
+                }) // logs and save to memory
         })
 
         console.log('created a new process configuration', processes[processId])
@@ -106,6 +122,7 @@ const addGraphEndpoints = (app) => {
     })
 }
 module.exports.addGraphEndpoints = addGraphEndpoints
+
 
 const getParticipantConfigs = (formInput) => {
     return ['CollectResponses', 'ResponseForEach', 'SendMessageToAll'].map((s, index) => {
@@ -125,6 +142,7 @@ const getParticipantConfigs = (formInput) => {
 }
 module.exports.getParticipantConfigs = getParticipantConfigs
 
+
 const proceedWithParticipantConfig = (app, paths, participantConfigs, callbacks) => {
     return paths.map((path, index) => {
         return standUpRegisterPageAndGetResults(
@@ -140,38 +158,56 @@ const proceedWithParticipantConfig = (app, paths, participantConfigs, callbacks)
 }
 module.exports.proceedWithParticipantConfig = proceedWithParticipantConfig
 
-const start = async (jsonGraph, address, secret) => {
+
+const start = async (jsonGraph, address, secret, dataWatcher = (signal) => {}) => {
     const client = await fbpClient({
         address,
         protocol: 'websocket',
         secret
     })
-
     await client.connect()
-    console.log('connected')
+    return new Promise((resolve, reject) => {
+        fbpGraph.graph.loadJSON(jsonGraph, async (err, graph) => {
+            if (err) {
+                reject(err)
+                return
+            }
+            await client.protocol.graph.send(graph, true)
 
-    fbpGraph.graph.loadJSON(jsonGraph, async (err, graph) => {
-        if (err) {
-            console.log(err)
-            return
-        }
+            const observer = client.observe(['network:*'])
 
-        await client.protocol.graph.send(graph, true)
+            try {
+                await client.protocol.network.start({
+                    graph: graph.name,
+                })
+                // forward each network data signal for this specific graph
+                client.on('network', signal => {
+                    if (signal.command === 'data' && signal.payload.graph === graph.name) {
+                        // just forward the payload itself, as other meta is assumed
+                        dataWatcher(signal.payload)
+                    }
+                })
+                // we receive two useful things here:
+                // DATA signals, and STOPPED signal, oh and ERROR signals
+                // console.log(signals)
+                const signals = await observer.until(['network:stopped'], ['network:error', 'network:processerror'])
 
-        console.log('sent graph')
-
-        await client.protocol.network.start({
-            graph: graph.name,
+                const stopped = signals.find(signal => signal.command === 'stopped' && signal.payload.graph === graph.name)
+                const error = signals.find(signal => signal.command === 'error' && signal.payload.graph === graph.name)
+                const processError = signals.find(signal => signal.command === 'processerror' && signal.payload.graph === graph.name)
+                if (stopped) resolve()
+                else reject(error || processError)
+            } catch (e) {
+                reject(e)
+            }
         })
-
-        console.log('started network')
     })
 }
 module.exports.start = start
 
-// going into a 'makefunction' component, hence the 'return 'return'
 const handleOptionsData = (optionsData) => {
-    // e.g. a+A=Agree, b+B=Block, c+C=Clock
+    // e.g. a+A=Agree, b+B=Block
+    // -> [ { triggers: ['a', 'A'], text: 'Agree' }, { triggers: ['b', 'B'], text: 'Block' }] 
     return optionsData
         .split(',')
         .map(s => {

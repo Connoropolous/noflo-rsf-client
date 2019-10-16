@@ -12,7 +12,7 @@ module.exports = {
 		HANDLE_REGISTER: pre => `${pre}/new-participant`,
 		CONFIGURE_1: '/',
 		HANDLE_CONFIGURE_1: '/handle_configure_1',
-		CONFIGURE_2: '/configure/:processId'
+		CONFIGURE_2: '/process/:processId'
 	},
 	EVENTS: {
 		RECEIVE: {

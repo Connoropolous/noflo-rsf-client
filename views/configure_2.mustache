@@ -5,7 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Configure Participants</title>
+    <title>
+            {{#configuring}}
+                Configure Participants
+            {{/configuring}}
+            {{^configuring}}
+                Dashboard
+            {{/configuring}}
+    </title>
     <style>
         .main {
             width: 50%;
@@ -31,11 +38,27 @@
 
 <body>
     <div class="main">
-        <h1>Configure Participants</h1>
-
+        {{#configuring}}
+            <h1>Configure Participants</h1>
+        {{/configuring}}
+        {{^configuring}}
+            <h1>Dashboard</h1>
+        {{/configuring}}
         {{#running}}
-            <p>The process is live and running now.</p>
+            <p>
+                The process is live and running now. The results will be posted here when it's complete.
+                Occasionally refresh the page to check completeness.
+            </p>
         {{/running}}
+        {{#complete}}
+            <p>The process has completed.</p>
+            <p>Here are the results:</p>
+            <p>{{ results }}</p>
+        {{/complete}}
+        {{#error}}
+            <p>There was an error:</p>
+            <p>{{ error }}</p>
+        {{/error}}
 
         <h3>Ideation Stage</h3>
         {{^ideationIsFacilitator}}

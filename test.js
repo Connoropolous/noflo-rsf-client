@@ -14,9 +14,21 @@ const participantConfigs = [
     [ { type: 'telegram', id: 'connorturland' }] // summary
 ]
 const convertedInputs = convertDataFromSheetToRSF(inputsFromSheets, participantConfigs)
-console.log(convertedInputs)
-
 const jsonGraph = overrideJsonGraph(convertedInputs, 'collect-react-results.json')
 
-start(jsonGraph, process.env.ADDRESS, process.env.TOP_SECRET)
+
+const dataWatcher = (signal) => {
+    if (signal.id === 'rsf/FormatReactionsList_cukq9() FORMATTED -> IN core/MakeFunction_lsxgf()') {
+        console.log('results', signal.data)
+    }
+}
+start(jsonGraph, process.env.ADDRESS, process.env.TOP_SECRET, dataWatcher)
+    .then(() => {
+        console.log('success')
+        process.exit(0)
+    })
+    .catch(e => {
+        console.log('error', e)
+        process.exit(1)
+    })
 
