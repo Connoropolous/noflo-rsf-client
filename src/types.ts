@@ -1,6 +1,6 @@
 
 interface ContactableConfig {
-    type: string
+	type: string
 	id: string
 	name?: string
 }
