@@ -3,6 +3,7 @@ dotenv.config()
 import * as express from 'express'
 import * as mustacheExpress from 'mustache-express'
 import * as http from 'http'
+import * as path from 'path'
 import * as socketIo from 'socket.io'
 const app = express()
 const server = http.createServer(app)
@@ -17,7 +18,7 @@ import {
 
 app.engine('mustache', mustacheExpress())
 app.set('view engine', 'mustache')
-app.set('views', '../views')
+app.set('views', path.join(__dirname, '..', 'views'))
 
 // participant registration
 if (process.env.NODE_ENV === 'development') {
