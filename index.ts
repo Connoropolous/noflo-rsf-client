@@ -1,16 +1,19 @@
-require('dotenv').config()
-const express = require('express')
-const mustacheExpress = require('mustache-express')
+import * as dotenv from 'dotenv'
+dotenv.config()
+import * as express from 'express'
+import * as mustacheExpress from 'mustache-express'
+import * as http from 'http'
+import * as socketIo from 'socket.io'
 const app = express()
-const server = require('http').createServer(app)
-const io = require('socket.io')(server)
-const {
+const server = http.createServer(app)
+const io = socketIo(server)
+import {
     addTestDevPage,
     addSocketListeners
-} = require('./participantRegister')
-const {
+} from './participantRegister'
+import {
     addGraphEndpoints
-} = require('./run_graph.js')
+} from './run_graph'
 
 app.engine('mustache', mustacheExpress())
 app.set('view engine', 'mustache')

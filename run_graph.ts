@@ -1,17 +1,21 @@
-const express = require('express')
-const fbpGraph = require('fbp-graph')
+import * as express from 'express'
+import * as fbpGraph from 'fbp-graph'
 // https://github.com/flowbased/fbp-graph/blob/master/src/Graph.coffee
 // https://flowbased.github.io/fbp-protocol/
-const fbpClient = require('fbp-client')
-const {
+import * as fbpClient from 'fbp-client'
+import {
     URLS,
     VIEWS
-} = require('./constants')
-const {
+} from './constants'
+import {
     guidGenerator,
     standUpRegisterPageAndGetResults,
-    remainingTime
-} = require('./participantRegister')
+    remainingTime,
+    standUpFacilitatorEndpoint
+} from './participantRegister'
+import {
+    ContactableConfig, Option, RegisterConfig
+} from './types'
 
 // hold process awareness
 const processes = {}
@@ -28,14 +32,14 @@ const addGraphEndpoints = (app) => {
         const config = processes[req.params.processId]
         if (config) {
             const keys = ['ideation', 'reaction', 'summary'].reduce((memo, value, index) => {
-                memo[`${value}IsFacilitator`] = config.participantConfigs[index].isFacilitator
+                memo[`${value}IsFacilitator`] = config.registerConfigs[index].isFacilitator
                 memo[`${value}ShowParticipants`] = !!config[`${value}Participants`].length
                 // non facilitator keys
                 memo[`${value}Url`] = `${process.env.URL}${config.paths[index]}`
-                memo[`${value}RemainingTime`] = remainingTime(config.participantConfigs[index].maxTime, config.startTime)
+                memo[`${value}RemainingTime`] = remainingTime(config.registerConfigs[index].maxTime, config.startTime)
                 // facilitator keys
                 memo[`${value}FormHandler`] = URLS.HANDLE_REGISTER(config.paths[index])
-                memo[`${value}ShowForm`] = config.participantConfigs[index].isFacilitator && config[`${value}Participants`].length === 0
+                memo[`${value}ShowForm`] = config.registerConfigs[index].isFacilitator && config[`${value}Participants`].length === 0
                 return memo
             }, {})
             res.render(VIEWS.CONFIGURE_2, {
@@ -53,7 +57,7 @@ const addGraphEndpoints = (app) => {
         const processId = guidGenerator()
         const startTime = Date.now()
 
-        let participantConfigs = getParticipantConfigs(req.body)
+        let registerConfigs = getRegisterConfigs(req.body)
 
         // boot up participant config stages
         const ideationPath = `${URLS.REGISTER}/${guidGenerator()}`
@@ -66,34 +70,37 @@ const addGraphEndpoints = (app) => {
             configuring: true,
             startTime,
             processId,
-            participantConfigs,
+            registerConfigs,
             paths,
             inputs: req.body,
             ideationParticipants: [],
             reactionParticipants: [],
             summaryParticipants: []
         }
-        
+
         // capture the results for each as they come in
         // do this in a non-blocking way
-        const callbacks = [
-            newP => { processes[processId].ideationParticipants.push(newP) },
-            newP => { processes[processId].reactionParticipants.push(newP) },
-            newP => { processes[processId].summaryParticipants.push(newP) }
-        ]
+        const ideationP: Promise<ContactableConfig[]> = proceedWithRegisterConfig(app, ideationPath, registerConfigs[0], (newP: ContactableConfig) => {
+            processes[processId].ideationParticipants.push(newP)
+        })
+        const reactionP: Promise<ContactableConfig[]> = proceedWithRegisterConfig(app, reactionPath, registerConfigs[1], (newP: ContactableConfig) => {
+            processes[processId].reactionParticipants.push(newP)
+        })
+        const summaryP: Promise<ContactableConfig[]> = proceedWithRegisterConfig(app, summaryPath, registerConfigs[2], (newP: ContactableConfig) => {
+            processes[processId].summaryParticipants.push(newP)
+        })
         // capture the sum results for each
-        const promises = proceedWithParticipantConfig(app, paths, participantConfigs, callbacks)
-        promises[0].then(ideationParticipants => {
+        ideationP.then((ideationParticipants: ContactableConfig[]) => {
             processes[processId].ideationParticipants = ideationParticipants
         })
-        promises[1].then(reactionParticipants => {
+        reactionP.then((reactionParticipants: ContactableConfig[]) => {
             processes[processId].reactionParticipants = reactionParticipants
         })
-        promises[2].then(summaryParticipants => {
+        summaryP.then((summaryParticipants: ContactableConfig[]) => {
             processes[processId].summaryParticipants = summaryParticipants
         })
         // once they're all ready, now commence the process
-        Promise.all(promises).then(participantArrays => {
+        Promise.all([ideationP, reactionP, summaryP]).then((participantArrays: ContactableConfig[][]) => {
             // mark as running now
             processes[processId].configuring = false
             processes[processId].running = true
@@ -117,16 +124,15 @@ const addGraphEndpoints = (app) => {
         })
 
         console.log('created a new process configuration', processes[processId])
-        
+
         res.redirect(URLS.CONFIGURE_2.replace(':processId', processId))
     })
 }
-module.exports.addGraphEndpoints = addGraphEndpoints
 
 
-const getParticipantConfigs = (formInput) => {
+const getRegisterConfigs = (formInput): RegisterConfig[] => {
     return ['CollectResponses', 'ResponseForEach', 'SendMessageToAll'].map((s, index) => {
-        let processContext
+        let processContext: string
         if (index === 0) processContext = 'Ideation'
         else if (index === 1) processContext = 'Reaction'
         else if (index === 2) processContext = 'Summary'
@@ -140,26 +146,21 @@ const getParticipantConfigs = (formInput) => {
         }
     })
 }
-module.exports.getParticipantConfigs = getParticipantConfigs
 
 
-const proceedWithParticipantConfig = (app, paths, participantConfigs, callbacks) => {
-    return paths.map((path, index) => {
-        return standUpRegisterPageAndGetResults(
-            app,
-            path,
-            participantConfigs[index].maxTime,
-            participantConfigs[index].maxParticipants,
-            participantConfigs[index].isFacilitator,
-            participantConfigs[index].processContext || processContext,
-            callbacks[index]
-        )
-    })
+const proceedWithRegisterConfig = (app, path: string, registerConfig: RegisterConfig, callback: (newP: ContactableConfig) => void): Promise<ContactableConfig[]> => {
+    return registerConfig.isFacilitator ? standUpFacilitatorEndpoint(app, path) : standUpRegisterPageAndGetResults(
+        app,
+        path,
+        registerConfig.maxTime,
+        registerConfig.maxParticipants,
+        registerConfig.processContext,
+        callback
+    )
 }
-module.exports.proceedWithParticipantConfig = proceedWithParticipantConfig
 
 
-const start = async (jsonGraph, address, secret, dataWatcher = (signal) => {}) => {
+const start = async (jsonGraph, address: string, secret: string, dataWatcher = (signal) => { }): Promise<void> => {
     const client = await fbpClient({
         address,
         protocol: 'websocket',
@@ -205,24 +206,23 @@ const start = async (jsonGraph, address, secret, dataWatcher = (signal) => {}) =
         })
     })
 }
-module.exports.start = start
 
-const handleOptionsData = (optionsData) => {
+const handleOptionsData = (optionsData: string): Option[] => {
     // e.g. a+A=Agree, b+B=Block
-    // -> [ { triggers: ['a', 'A'], text: 'Agree' }, { triggers: ['b', 'B'], text: 'Block' }] 
     return optionsData
         .split(',')
-        .map(s => {
+        .map((s: string) => {
             // trim cleans white space
-            const [triggers, text] = s.trim().split('=')
+            const [triggersString, text] = s.trim().split('=')
             return {
-                triggers: triggers.split('+'),
+                triggers: triggersString.split('+'),
                 text
             }
         })
 }
 
-const convertDataFromSheetToRSF = (inputs, [ideationParticipants, reactionParticipants, summaryParticipants]) => {
+const convertDataFromSheetToRSF = (inputs, participantConfigs: Array<Array<ContactableConfig>>) => {
+    const [ideationParticipants, reactionParticipants, summaryParticipants] = participantConfigs
     const inputsNeeded = [
         // 0
         {
@@ -299,7 +299,6 @@ const convertDataFromSheetToRSF = (inputs, [ideationParticipants, reactionPartic
         }
     })
 }
-module.exports.convertDataFromSheetToRSF = convertDataFromSheetToRSF
 
 const overrideJsonGraph = (inputs, filename) => {
     const originalGraph = require(`./graphs/${filename}`)
@@ -333,7 +332,15 @@ const overrideJsonGraph = (inputs, filename) => {
 
     return modifiedGraph
 }
-module.exports.overrideJsonGraph = overrideJsonGraph
+
+export {
+    overrideJsonGraph,
+    addGraphEndpoints,
+    convertDataFromSheetToRSF,
+    getRegisterConfigs,
+    proceedWithRegisterConfig,
+    start
+}
 
 
 /*
@@ -352,38 +359,38 @@ client.protocol = {
         addedge,
         removeedge,
         changeedge,
-        addinitial,
-        removeinitial,
-        addinport,
-        removeinport,
-        renameinport,
-        addoutport,
-        removeoutport,
-        renameoutport,
-        addgroup,
-        removegroup,
-        renamegroup,
-        changegroup,
-        send
-    },
-    network: {
-        start,
-        getstatus,
-        stop,
-        persist,
-        debug,
-        edges
-    },
-    runtime: {
-        getruntime,
-        packet
-    },
-    trace: {
-        start,
-        stop,
-        dump,
-        clear
-    }
+addinitial,
+removeinitial,
+addinport,
+removeinport,
+renameinport,
+addoutport,
+removeoutport,
+renameoutport,
+addgroup,
+removegroup,
+renamegroup,
+changegroup,
+send
+},
+network: {
+start,
+getstatus,
+stop,
+persist,
+debug,
+edges
+},
+runtime: {
+getruntime,
+packet
+},
+trace: {
+start,
+stop,
+dump,
+clear
+}
 }
 */
 
