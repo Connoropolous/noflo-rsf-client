@@ -8,11 +8,11 @@ const app = express()
 const server = http.createServer(app)
 const io = socketIo(server)
 import {
-    addTestDevPage,
-    addSocketListeners
+  addTestDevPage,
+  addSocketListeners
 } from './participantRegister'
 import {
-    addGraphEndpoints
+  addGraphEndpoints
 } from './run_graph'
 
 app.engine('mustache', mustacheExpress())
@@ -21,7 +21,7 @@ app.set('views', __dirname + '/views')
 
 // participant registration
 if (process.env.NODE_ENV === 'development') {
-    addTestDevPage(app)
+  addTestDevPage(app)
 }
 addSocketListeners(io, app)
 
@@ -29,5 +29,5 @@ addSocketListeners(io, app)
 addGraphEndpoints(app)
 
 server.listen(process.env.PORT, () => {
-    console.log('listening on port ' + process.env.PORT)
+  console.log('listening on port ' + process.env.PORT)
 })

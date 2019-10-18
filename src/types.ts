@@ -1,25 +1,25 @@
 
 interface ContactableConfig {
-	type: string
-	id: string
-	name?: string
+  type: string
+  id: string
+  name?: string
 }
 
 interface Statement {
-	text: string
+  text: string
 }
 
 interface Option {
-	triggers: string[],
-	text: string
+  triggers: string[],
+  text: string
 }
 
 interface RegisterConfig {
-	stage: string
-	isFacilitator: boolean
-	processContext: string
-	maxTime: number
-	maxParticipants: number | string
+  stage: string
+  isFacilitator: boolean
+  processContext: string
+  maxTime: number
+  maxParticipants: number | string
 }
 
 /*
@@ -29,8 +29,8 @@ interface Reaction {
 */
 
 export {
-	ContactableConfig,
-	Statement,
-	Option,
-	RegisterConfig
+  ContactableConfig,
+  Statement,
+  Option,
+  RegisterConfig
 }
