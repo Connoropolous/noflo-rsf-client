@@ -301,7 +301,7 @@ const convertDataFromSheetToRSF = (inputs, participantConfigs: Array<Array<Conta
 }
 
 const overrideJsonGraph = (inputs, filename) => {
-    const originalGraph = require(`./graphs/${filename}`)
+    const originalGraph = require(`../graphs/${filename}`)
 
     // most relevant connections are inputs
     const connections = originalGraph.connections.map(connection => {

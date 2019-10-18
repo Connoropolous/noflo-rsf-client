@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv'
 dotenv.config()
-import { start, overrideJsonGraph, convertDataFromSheetToRSF } from './run_graph'
-import { ContactableConfig } from './types'
+import { start, overrideJsonGraph, convertDataFromSheetToRSF } from '../src/run_graph'
+import { ContactableConfig } from '../src/types'
 
 const inputsFromSheets = {
     'rsf/CollectResponses_lctpp--prompt': 'npm run test prompt', // CollectResponses prompt
