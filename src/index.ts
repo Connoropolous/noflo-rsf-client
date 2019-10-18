@@ -10,7 +10,7 @@ const io = socketIo(server)
 import {
   addTestDevPage,
   addSocketListeners
-} from './participantRegister'
+} from './participant_register'
 import {
   addGraphEndpoints
 } from './run_graph'

@@ -12,7 +12,7 @@ import {
   standUpRegisterPageAndGetResults,
   remainingTime,
   standUpFacilitatorEndpoint
-} from './participantRegister'
+} from './participant_register'
 import {
   ContactableConfig, Option, RegisterConfig
 } from './types'
