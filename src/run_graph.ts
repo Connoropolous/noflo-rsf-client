@@ -221,7 +221,7 @@ const handleOptionsData = (optionsData: string): Option[] => {
     })
 }
 
-const convertDataFromSheetToRSF = (inputs, participantConfigs: Array<Array<ContactableConfig>>) => {
+const convertDataFromSheetToRSF = (inputs, participantConfigs: ContactableConfig[][]) => {
   const [ideationParticipants, reactionParticipants, summaryParticipants] = participantConfigs
   const inputsNeeded = [
     // 0
