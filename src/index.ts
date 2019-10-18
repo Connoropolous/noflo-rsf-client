@@ -17,7 +17,7 @@ import {
 
 app.engine('mustache', mustacheExpress())
 app.set('view engine', 'mustache')
-app.set('views', __dirname + '/views')
+app.set('views', '../views')
 
 // participant registration
 if (process.env.NODE_ENV === 'development') {
