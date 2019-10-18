@@ -22,6 +22,24 @@ interface RegisterConfig {
   maxParticipants: number | string
 }
 
+interface ExpectedInput {
+  process: string
+  port: string
+}
+
+interface Stage {
+  name: string
+  description: string
+  expected_inputs: ExpectedInput[]
+}
+
+interface Template {
+  name: string
+  description: string
+  graph_name: string
+  stages: Stage[]
+}
+
 /*
 interface Reaction {
 	statement
@@ -32,5 +50,8 @@ export {
   ContactableConfig,
   Statement,
   Option,
-  RegisterConfig
+  RegisterConfig,
+  Template,
+  Stage,
+  ExpectedInput
 }
