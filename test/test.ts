@@ -16,7 +16,7 @@ const participantConfigs: ContactableConfig[][] = [
   [{ type: 'telegram', id: 'connorturland' }] // summary
 ]
 const convertedInputs = convertDataFromSheetToRSF(inputsFromSheets, participantConfigs)
-const jsonGraph = overrideJsonGraph(convertedInputs, 'collect-react-results.json')
+const jsonGraph = overrideJsonGraph(convertedInputs, 'ideation-reaction.json')
 
 
 const dataWatcher = (signal) => {
@@ -24,7 +24,7 @@ const dataWatcher = (signal) => {
     console.log('results', signal.data)
   }
 }
-start(jsonGraph, process.env.ADDRESS, process.env.TOP_SECRET, dataWatcher)
+start(jsonGraph, dataWatcher)
   .then(() => {
     console.log('success')
     process.exit(0)

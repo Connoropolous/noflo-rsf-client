@@ -1,0 +1,35 @@
+<div id="{{ process }}_ParticipantRegister">
+  <input type="radio" value="facil_register" id="{{ process }}-check-facil_register"
+    name="{{ process }}-check-facil_register" v-model="register_selection">
+  <label class="label-inline" for="{{ process }}-check-facil_register">Configure participant list myself</label>
+  <br />
+  <input type="radio" value="public_link" id="{{ process }}-check-public_link"
+    name="{{ process }}-check-public_link" v-model="register_selection">
+  <label class="label-inline" for="{{ process }}-check-public_link">Allow participants to register at a public
+    link</label>
+  <div v-if="register_selection === 'public_link'">
+    <label for="{{ process }}-ParticipantRegister-process_context">Provide a little bit of context to participants as
+      to what they're registering for</label>
+    <input type="text" id="{{ process }}-ParticipantRegister-process_context"
+      name="{{ process }}-ParticipantRegister-process_context">
+    <label for="{{ process }}-ParticipantRegister-max_time">How many minutes would you like to leave for participant
+      registration for this stage?</label>
+    <input type="text" id="{{ process }}-ParticipantRegister-max_time"
+      name="{{ process }}-ParticipantRegister-max_time">
+    <label for="{{ process }}-ParticipantRegister-max_participants">What is the maximum number of participants you'd
+      like to accept for this stage?</label>
+    <input type="text" id="{{ process }}-ParticipantRegister-max_participants"
+      name="{{ process }}-ParticipantRegister-max_participants">
+  </div>
+</div>
+<script>
+  (() => {
+    const el = document.getElementById('{{ process }}_ParticipantRegister')
+    new Vue({
+      el,
+      data: {
+        register_selection: 'facil_register'
+      }
+    })
+  })()
+</script>

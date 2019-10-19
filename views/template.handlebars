@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>{{ template.name }}: Rapid Sensemaking</title>
+  <style>
+    form {
+      width: 50%;
+      margin: 50px auto;
+      max-width: 800px;
+    }
+
+    @media only screen and (max-width: 800px) {
+      form {
+        width: 80%;
+      }
+    }
+  </style>
+
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.css">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/milligram/1.3.0/milligram.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+</head>
+
+<body>
+  <form action="{{formHandler}}" method="post">
+    <div id="notifier"></div>
+    <h1>Design & Run Rapid Sensemaking</h1>
+    <h2>{{ template.name }}</h2>
+    <div>
+      <p>
+        "Rapid sensemaking" in the context of the "rapid sensemaking framework" (rsf) means using digital tools
+        to quickly and easily reach many people across many mediums, from Telegram to text messaging and far
+        further, and to engage them in processes of ideation, decision making, voting, or other social
+        thinking/acting.
+      </p>
+      <p>
+        You can read more about it here: <a target="_blank"
+          href="https://github.com/rapid-sensemaking-framework/noflo-rsf">https://github.com/rapid-sensemaking-framework/noflo-rsf</a>
+      </p>
+      {{{ template.description }}}
+      <p>
+        As soon as you finish filling in this form and configuring participants, the rsf process will commence, meaning messages will immediately be sent to the participants.
+      </p>
+    </div>
+
+    {{#template}}
+    {{#stages}}
+    <h2>{{ name }}</h2>
+    <p>{{ description }}</p>
+    {{#expected_inputs}}
+      {{> (mapInputToFormType this)}}
+    {{/expected_inputs}}
+    <hr>
+    {{/stages}}
+    {{/template}}
+    <br />
+    <button type="submit">Move To Configure Participants</button>
+  </form>
+</body>
+
+</html>

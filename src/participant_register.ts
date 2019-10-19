@@ -17,7 +17,8 @@ const addTestDevPage = (app) => {
       maxParticipants: 3,
       participantCount: 0,
       processDescription: 'test',
-      registrationClosed: false
+      registrationClosed: false,
+      layout: false
     })
   })
 }
@@ -111,7 +112,8 @@ const standUpRegisterPageAndGetResults = (app, mountPoint: string, maxTime: numb
         maxParticipants,
         participantCount: results.length,
         processDescription,
-        registrationClosed: calledComplete
+        registrationClosed: calledComplete,
+        layout: false
       })
     })
 

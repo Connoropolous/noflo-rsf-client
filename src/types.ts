@@ -25,6 +25,13 @@ interface RegisterConfig {
 interface ExpectedInput {
   process: string
   port: string
+  help?: string
+  label?: string
+  type?: string
+  component?: string
+  input_type_override?: string
+  default_value?: any
+  placeholder?: string,
 }
 
 interface Stage {
@@ -36,7 +43,6 @@ interface Stage {
 interface Template {
   name: string
   description: string
-  graph_name: string
   stages: Stage[]
 }
 
