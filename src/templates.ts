@@ -39,7 +39,7 @@ const addTemplateEndpoints = (app) => {
     const template: Template = require(templatePath)
     // load up graph json too
     const graph = require(graphPath)
-    // load up expected_input types, help text, and component names
+    // load up expectedInput types, help text, and component names
     const stages = await componentMetaForStages(template.stages, graph)
     res.render(VIEWS.TEMPLATE, {
       template: {

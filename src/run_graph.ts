@@ -52,13 +52,13 @@ const addGraphEndpoints = (app) => {
     if (config) {
       const keys = ['ideation', 'reaction', 'summary'].reduce((memo, value, index) => {
         memo[`${value}IsFacilitator`] = config.registerConfigs[index].isFacilitator
-        memo[`${value}ShowParticipants`] = !!config[`${value}Participants`].length
+        memo[`${value}ShowParticipants`] = false // !!config[`${value}Participants`].length
         // non facilitator keys
         memo[`${value}Url`] = `${process.env.URL}${config.paths[index]}`
         memo[`${value}RemainingTime`] = remainingTime(config.registerConfigs[index].maxTime, config.startTime)
         // facilitator keys
         memo[`${value}FormHandler`] = URLS.HANDLE_REGISTER(config.paths[index])
-        memo[`${value}ShowForm`] = config.registerConfigs[index].isFacilitator && config[`${value}Participants`].length === 0
+        memo[`${value}ShowForm`] = config.registerConfigs[index].isFacilitator // && config[`${value}Participants`].length === 0
         return memo
       }, {})
       res.render(VIEWS.PROCESS, {
@@ -150,77 +150,6 @@ const handleOptionsData = (optionsData: string): Option[] => {
     })
 }
 
-const convertDataFromSheetToRSF = (inputs, participantConfigs: ContactableConfig[][]) => {
-  const [ideationParticipants, reactionParticipants, summaryParticipants] = participantConfigs
-  const inputsNeeded = [
-    {
-      process: 'rsf/CollectResponses_lctpp',
-      port: 'contactable_configs',
-    },
-    {
-      process: 'rsf/CollectResponses_lctpp',
-      port: 'prompt',
-    },
-    {
-      process: 'rsf/CollectResponses_lctpp',
-      port: 'max_responses',
-    },
-    {
-      process: 'rsf/CollectResponses_lctpp',
-      port: 'max_time',
-    },
-    {
-      process: 'rsf/ResponseForEach_cd3dx',
-      port: 'contactable_configs',
-    },
-    {
-      process: "rsf/ResponseForEach_cd3dx",
-      port: "max_time"
-    },
-    {
-      process: "rsf/ResponseForEach_cd3dx",
-      port: "options"
-    },
-    {
-      process: 'rsf/SendMessageToAll_xil86',
-      port: 'contactable_configs'
-    }
-  ]
-
-  // all incoming data are strings
-  return inputsNeeded.map((inputType, index) => {
-    let inputData
-    switch (index) {
-      case 0:
-        inputData = ideationParticipants
-        break
-      case 1:
-        inputData = inputs[`${inputType.process}--${inputType.port}`]
-        break
-      case 2: // max_responses
-        inputData = parseInt(inputs[`${inputType.process}--${inputType.port}`])
-        break
-      case 3: // max_time
-      case 5: // max_time
-        inputData = parseFloat(inputs[`${inputType.process}--${inputType.port}`]) * 60 // minutes, converted to seconds
-        break
-      case 4:
-        inputData = reactionParticipants
-        break
-      case 6:
-        inputData = handleOptionsData(inputs[`${inputType.process}--${inputType.port}`])
-        break
-      case 7:
-        inputData = summaryParticipants
-        break
-    }
-    return {
-      inputType,
-      inputData
-    }
-  })
-}
-
 const overrideJsonGraph = (inputs, graphPath: string) => {
   const originalGraph = require(graphPath)
 
@@ -257,7 +186,6 @@ const overrideJsonGraph = (inputs, graphPath: string) => {
 export {
   overrideJsonGraph,
   addGraphEndpoints,
-  convertDataFromSheetToRSF,
   start,
   mapInputToFormType,
   componentMetaForStages
