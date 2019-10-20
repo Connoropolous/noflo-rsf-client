@@ -25,7 +25,7 @@ const getProcess = async (id: string): Promise<Process> => {
 }
 
 const setProcessProp = async (id: string, key: string, value: any): Promise<boolean> => {
-  console.log(`updating process ${id} value ${key}: ${JSON.stringify(value)})`)
+  console.log(`updating process ${id} value ${key}: ${JSON.stringify(value)}`)
   processes[id][key] = value
   return true
 }
@@ -260,7 +260,7 @@ const runProcess = async (processId: string, app) => {
   setProcessProp(processId, 'running', true)
   const jsonGraph = overrideJsonGraph(graphInputs, graphPath)
   const dataWatcher = (signal) => {
-    if (signal.id === 'rsf/FormatReactionsList_cukq9() FORMATTED -> IN core/MakeFunction_lsxgf()') {
+    if (signal.id === template.resultConnection) {
       // save the results to the process
       setProcessProp(processId, 'results', signal.data)
     }

@@ -57,6 +57,7 @@ const addGraphEndpoints = (app) => {
       })
       res.render(VIEWS.PROCESS, {
         ...config,
+        results: config.results ? config.results.replace(/\n/g, "<br />") : '',
         // ...keys,
         stages,
         layout: false

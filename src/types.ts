@@ -44,7 +44,8 @@ interface Stage {
 interface Template {
   name: string
   description: string
-  stages: Stage[]
+  stages: Stage[],
+  resultConnection: string
 }
 
 type RegisterConfigSet = {
