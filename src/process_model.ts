@@ -87,6 +87,12 @@ const handleText: Handler = async ({ input }): Promise<string> => {
 const handleInt: Handler = async ({ input }): Promise<number> => {
   return parseInt(input)
 }
+const handleArray: Handler = async ({ input }): Promise<Array<any>> => {
+  return JSON.parse(input)
+}
+const handleObject: Handler = async ({ input }): Promise<object> => {
+  return JSON.parse(input)
+}
 const handleMaxTime: Handler = async ({ input }): Promise<number> => {
   return parseFloat(input) * 60 // minutes, converted to seconds
 }
@@ -138,11 +144,11 @@ const nofloTypeMap = {
   },
   array: {
     input: 'text',
-    handler: () => { } // TODO
+    handler: handleArray
   },
   object: {
     input: 'text',
-    handler: () => { } // TODO
+    handler: handleObject
   },
   all: {
     input: 'text',
