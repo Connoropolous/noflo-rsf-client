@@ -19,7 +19,8 @@ interface RegisterConfig {
   isFacilitator: boolean
   processContext: string
   maxTime: number
-  maxParticipants: number | string
+  maxParticipants: number | string,
+  path: string
 }
 
 interface ExpectedInput {
@@ -46,21 +47,30 @@ interface Template {
   stages: Stage[]
 }
 
+type RegisterConfigSet = {
+  [key: string]: RegisterConfig
+}
+
+type ContactableConfigSet = {
+  [key: string]: ContactableConfig[]
+}
+
+type FormInputs = object
+
 interface Process {
   id: string
-  templateId: string,
-  templatePath: string,
-  graphPath: string,
-  configuring: boolean,
-  running: boolean,
-  complete: boolean,
-  results?: any,
-  error?: any,
-  startTime: number,
-  registerConfigs: RegisterConfig[],
-  paths: string[],
-  inputs: object,
-  participants: ContactableConfig[][]
+  templateId: string
+  templatePath: string
+  graphPath: string
+  configuring: boolean
+  running: boolean
+  complete: boolean
+  results?: any
+  error?: any
+  startTime: number
+  formInputs: FormInputs
+  registerConfigs: RegisterConfigSet
+  participants: ContactableConfigSet
 }
 
 /*
@@ -69,13 +79,25 @@ interface Reaction {
 }
 */
 
+interface GraphInput {
+  tgt: { // target
+    process: string
+    port: string
+  }
+  data: any
+}
+
 export {
   ContactableConfig,
+  ContactableConfigSet,
   Statement,
   Option,
   RegisterConfig,
+  RegisterConfigSet,
   Template,
   Stage,
+  FormInputs,
   ExpectedInput,
-  Process
+  Process,
+  GraphInput
 }

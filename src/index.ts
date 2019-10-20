@@ -16,8 +16,7 @@ import {
   addSocketListeners
 } from './participant_register'
 import {
-  addGraphEndpoints,
-  mapInputToFormType
+  addGraphEndpoints
 } from './run_graph'
 import {
   URLS, VIEWS
@@ -25,6 +24,9 @@ import {
 import {
   addTemplateEndpoints
 } from './templates'
+import {
+  mapInputToFormType
+} from './process_model'
 
 app.engine('handlebars', exphbs({
   helpers: {

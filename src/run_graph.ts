@@ -9,61 +9,56 @@ import {
   remainingTime,
 } from './participant_register'
 import {
-  ContactableConfig,
-  Option,
   ExpectedInput,
   Stage,
+  GraphInput,
+  Template,
+  RegisterConfig,
+  ContactableConfig,
 } from './types'
 import {
-  getProcess
+  getProcess, CONTACTABLE_CONFIG_PORT_NAME
 } from './process_model'
 import {
   createFbpClient
 } from './fbp'
-
-// noflo input types
-// all, string, number, int, object, array, boolean, color, date, bang, function, buffer, stream
-// map these to form inputs
-// allow for overrides
-const nofloTypeToInputType = {
-  string: 'text',
-  number: 'text',
-  int: 'text',
-  boolean: 'checkbox',
-  array: 'text',
-  object: 'text',
-  all: 'text'
-  // todo: the rest
-}
-const specialPorts = {
-  contactable_configs: 'register_config'
-}
-const mapInputToFormType = (expectedInput: ExpectedInput): string => {
-  const { type, port, inputTypeOverride } = expectedInput
-  // specialPorts > input_type_override > basic type
-  const form_partial = specialPorts[port] || inputTypeOverride || nofloTypeToInputType[type]
-  return `form_${form_partial}`
-}
 
 const addGraphEndpoints = (app) => {
   app.get(URLS.PROCESS, async function (req, res) {
     // load up the saved process at the given id
     const config = await getProcess(req.params.processId)
     if (config) {
-      const keys = ['ideation', 'reaction', 'summary'].reduce((memo, value, index) => {
-        memo[`${value}IsFacilitator`] = config.registerConfigs[index].isFacilitator
-        memo[`${value}ShowParticipants`] = false // !!config[`${value}Participants`].length
-        // non facilitator keys
-        memo[`${value}Url`] = `${process.env.URL}${config.paths[index]}`
-        memo[`${value}RemainingTime`] = remainingTime(config.registerConfigs[index].maxTime, config.startTime)
-        // facilitator keys
-        memo[`${value}FormHandler`] = URLS.HANDLE_REGISTER(config.paths[index])
-        memo[`${value}ShowForm`] = config.registerConfigs[index].isFacilitator // && config[`${value}Participants`].length === 0
-        return memo
-      }, {})
+      const template: Template = require(config.templatePath)
+      const stages = template.stages.map((stage: Stage) => {
+        // find registerConfigs and participants for contactable_configs
+        const expectedRegisters = stage.expectedInputs.reduce((memo, expectedInput: ExpectedInput) => {
+          if (expectedInput.port === CONTACTABLE_CONFIG_PORT_NAME) {
+            const registerConfig: RegisterConfig = config.registerConfigs[expectedInput.process]
+            const participants: ContactableConfig[] = config.participants[expectedInput.process]
+            const expectedRegister = {
+              ...registerConfig,
+              participants,
+              showParticipants: !!participants.length,
+              // non facilitator keys
+              url: `${process.env.URL}${registerConfig.path}`,
+              remainingTime: remainingTime(registerConfig.maxTime, config.startTime),
+              // facilitator keys
+              formHandler: URLS.HANDLE_REGISTER(registerConfig.path),
+              showForm: registerConfig.isFacilitator && !participants.length
+            }
+            return memo.concat([expectedRegister])
+          }
+          return memo
+        }, [])
+        return {
+          ...stage,
+          expectedRegisters
+        }
+      })
       res.render(VIEWS.PROCESS, {
         ...config,
-        ...keys,
+        // ...keys,
+        stages,
         layout: false
       })
     } else {
@@ -136,37 +131,14 @@ const componentMetaForStages = async (stages: Stage[], graph): Promise<Stage[]> 
   })
 }
 
-const handleOptionsData = (optionsData: string): Option[] => {
-  // e.g. a+A=Agree, b+B=Block
-  return optionsData
-    .split(',')
-    .map((s: string) => {
-      // trim cleans white space
-      const [triggersString, text] = s.trim().split('=')
-      return {
-        triggers: triggersString.split('+'),
-        text
-      }
-    })
-}
-
-const overrideJsonGraph = (inputs, graphPath: string) => {
+const overrideJsonGraph = (graphInputs: GraphInput[], graphPath: string) => {
   const originalGraph = require(graphPath)
-
   // most relevant connections are inputs
   const connections = originalGraph.connections.map(connection => {
-    const foundOverride = inputs.find(input => {
-      return input.inputType.process === connection.tgt.process && input.inputType.port === connection.tgt.port
+    const foundOverride = graphInputs.find(input => {
+      return input.tgt.process === connection.tgt.process && input.tgt.port === connection.tgt.port
     })
-    if (foundOverride) {
-      return {
-        tgt: {
-          ...connection.tgt
-        },
-        data: foundOverride.inputData
-      }
-    }
-    else return connection
+    return foundOverride || connection
   })
 
   const modifiedGraph = {
@@ -187,6 +159,5 @@ export {
   overrideJsonGraph,
   addGraphEndpoints,
   start,
-  mapInputToFormType,
   componentMetaForStages
 }
