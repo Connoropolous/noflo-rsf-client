@@ -4,9 +4,9 @@ Design and run rapid sensemaking processes!
 
 Connects to a 'noflo runtime' in order to execute a configured flow-based programming graph.
 
-This repo could be extended to allow different noflo graphs representing various rsf type flows. 
+This repo can be extended to allow different noflo graphs representing various rsf type flows. 
 
-These flows can be designed and run on app.flowhub.io. You can then download the graph JSON files, and put them in this repo.
+These flows can be designed and run on https://app.flowhub.io. Download the graph JSON files, and put them in this repo in the `graphs` folder. Then, create a JSON template for it and put in the `templates` folder.
 
 ## Developers
 
