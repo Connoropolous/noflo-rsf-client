@@ -12,9 +12,9 @@ const URLS = {
   },
   INDEX: '/',
   REGISTER: '/register',
-  HANDLE_REGISTER: pre => `${pre}/new-participant`,
+  HANDLE_REGISTER: (pre: string) => `${pre}/new-participant`,
   TEMPLATE: '/template/:templateId',
-  HANDLE_TEMPLATE: '/handle_template',
+  HANDLE_TEMPLATE: '/template/:templateId/handle_template',
   PROCESS: '/process/:processId'
 }
 

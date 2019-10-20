@@ -29,21 +29,38 @@ interface ExpectedInput {
   label?: string
   type?: string
   component?: string
-  input_type_override?: string
-  default_value?: any
+  inputTypeOverride?: string
+  defaultValue?: any
   placeholder?: string,
 }
 
 interface Stage {
   name: string
   description: string
-  expected_inputs: ExpectedInput[]
+  expectedInputs: ExpectedInput[]
 }
 
 interface Template {
   name: string
   description: string
   stages: Stage[]
+}
+
+interface Process {
+  id: string
+  templateId: string,
+  templatePath: string,
+  graphPath: string,
+  configuring: boolean,
+  running: boolean,
+  complete: boolean,
+  results?: any,
+  error?: any,
+  startTime: number,
+  registerConfigs: RegisterConfig[],
+  paths: string[],
+  inputs: object,
+  participants: ContactableConfig[][]
 }
 
 /*
@@ -59,5 +76,6 @@ export {
   RegisterConfig,
   Template,
   Stage,
-  ExpectedInput
+  ExpectedInput,
+  Process
 }

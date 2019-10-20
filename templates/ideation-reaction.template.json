@@ -5,13 +5,13 @@
     {
       "name": "Ideation Stage",
       "description": "At this stage, each participant will be asked to provide responses to a given prompt, defined in this form, and limited to the number of responses set here, and the amount of time.",
-      "expected_inputs": [
+      "expectedInputs": [
         {
           "process": "rsf/CollectResponses_lctpp",
           "port": "prompt",
           "placeholder": "e.g. What is your definition of Collective Intelligence?",
           "label": "What is the prompt you would like to give participants, to reflect on and respond to?",
-          "input_type_override": "textarea"
+          "inputTypeOverride": "textarea"
         },
         {
           "process": "rsf/CollectResponses_lctpp",
@@ -32,14 +32,14 @@
     {
       "name": "Reaction Stage",
       "description": "At this stage, check for the reactions (e.g. Agree, Disagree) of particular people about the statements ideated in the first stage.",
-      "expected_inputs": [
+      "expectedInputs": [
         {
           "process": "rsf/ResponseForEach_cd3dx",
           "port": "options",
           "label": "What are the options you'd like to give participants to react with? Add custom ones by adding options in the format of 'b+B=Block, c+C=Clock' where 'b+B' are the 'triggers' that people type, and 'Block' is the thing they are choosing, and ', ' is the separator.",
           "placeholder": "a+A=Agree, d+D=Disagree, ...",
-          "default_value": "a+A=Agree, d+D=Disagree, p+P=Pass",
-          "input_type_override": "textarea"
+          "defaultValue": "a+A=Agree, d+D=Disagree, p+P=Pass",
+          "inputTypeOverride": "textarea"
         },
         {
           "process": "rsf/ResponseForEach_cd3dx",
@@ -55,7 +55,7 @@
     {
       "name": "Summary Stage",
       "description": "At this stage, particular people can be sent the voted upon results of the ideation of everyone.",
-      "expected_inputs": [
+      "expectedInputs": [
         {
           "process": "rsf/SendMessageToAll_xil86",
           "port": "contactable_configs"

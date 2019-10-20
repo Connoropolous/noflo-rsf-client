@@ -12,6 +12,7 @@ import {
   ContactableConfig,
   Option,
   ExpectedInput,
+  Stage,
 } from './types'
 import {
   getProcess
@@ -32,14 +33,15 @@ const nofloTypeToInputType = {
   array: 'text',
   object: 'text',
   all: 'text'
+  // todo: the rest
 }
 const specialPorts = {
   contactable_configs: 'register_config'
 }
-const mapInputToFormType = (expected_input: ExpectedInput): string => {
-  const { type, port, input_type_override } = expected_input
+const mapInputToFormType = (expectedInput: ExpectedInput): string => {
+  const { type, port, inputTypeOverride } = expectedInput
   // specialPorts > input_type_override > basic type
-  const form_partial = specialPorts[port] || input_type_override || nofloTypeToInputType[type]
+  const form_partial = specialPorts[port] || inputTypeOverride || nofloTypeToInputType[type]
   return `form_${form_partial}`
 }
 
@@ -109,6 +111,28 @@ const start = async (jsonGraph, dataWatcher = (signal) => { }): Promise<void> =>
       if (stopped) resolve()
       else reject(error || processError)
     })
+  })
+}
+
+const componentMetaForStages = async (stages: Stage[], graph): Promise<Stage[]> => {
+  const client = await createFbpClient()
+  const components = await client.protocol.component.list()
+  /// TODO: disconnect?
+  return stages.map((stage: Stage): Stage => {
+    return {
+      ...stage,
+      expectedInputs: stage.expectedInputs.map((e: ExpectedInput): ExpectedInput => {
+        const componentName = graph.processes[e.process].component
+        const component = components.find((c) => c.name === componentName)
+        const port = component.inPorts.find((i) => i.id === e.port)
+        return {
+          ...e,
+          label: e.label || port.description,
+          type: port.type,
+          component: componentName
+        }
+      })
+    }
   })
 }
 
@@ -197,8 +221,8 @@ const convertDataFromSheetToRSF = (inputs, participantConfigs: ContactableConfig
   })
 }
 
-const overrideJsonGraph = (inputs, filename) => {
-  const originalGraph = require(`../graphs/${filename}`)
+const overrideJsonGraph = (inputs, graphPath: string) => {
+  const originalGraph = require(graphPath)
 
   // most relevant connections are inputs
   const connections = originalGraph.connections.map(connection => {
@@ -235,5 +259,6 @@ export {
   addGraphEndpoints,
   convertDataFromSheetToRSF,
   start,
-  mapInputToFormType
+  mapInputToFormType,
+  componentMetaForStages
 }
