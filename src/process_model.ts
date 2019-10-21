@@ -12,7 +12,8 @@ import {
   ExpectedInput,
   Stage,
   Option,
-  GraphInput
+  GraphInput,
+  Statement
 } from './types'
 import { overrideJsonGraph, start, componentMetaForStages } from './run_graph'
 
@@ -109,6 +110,9 @@ const handleOptionsData: Handler = async ({ input }): Promise<Option[]> => {
       }
     })
 }
+const handleStatementsData: Handler = async ({ input }): Promise<Array<Statement>> => {
+  return input.split('\n').map(s => ({ text: s }))
+}
 const handleRegisterConfig: Handler = ({ app, registerConfig, callback }): Promise<ContactableConfig[]> => {
   const { isFacilitator, maxTime, maxParticipants, processContext, path } = registerConfig
   return isFacilitator ? standUpFacilitatorEndpoint(app, path) : standUpRegisterPageAndGetResults(
@@ -160,6 +164,10 @@ const specialPorts = {
   contactable_configs: {
     input: 'register_config',
     handler: handleRegisterConfig
+  },
+  statements: {
+    input: 'textarea',
+    handler: handleStatementsData
   },
   options: {
     handler: handleOptionsData
