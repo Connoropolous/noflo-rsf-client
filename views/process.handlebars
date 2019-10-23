@@ -120,6 +120,7 @@
     // add one listeners
     document.querySelectorAll('.add-one').forEach(node => {
       node.addEventListener('click', event => {
+        event.preventDefault()
         const form = node.parentNode
         const newRow = document.createElement('div')
         newRow.innerHTML = document.querySelector('.hidden .contactable-form-wrapper').outerHTML
@@ -134,8 +135,6 @@
       form.addEventListener('submit', async (event) => {
         // dont refresh
         event.preventDefault()
-
-        if (event.explicitOriginalTarget.className.includes('add-one')) return
 
         const configs = []
         const ids = form.querySelectorAll('.id')
