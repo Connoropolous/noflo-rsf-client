@@ -1,21 +1,14 @@
 
 const VIEWS = {
-  INDEX: 'index',
-  REGISTER: 'register',
-  TEMPLATE: 'template',
-  PROCESS: 'process'
+  REGISTER: 'register'
 }
 
 const URLS = {
   DEV: {
     REGISTER: '/dev-register',
   },
-  INDEX: '/',
-  REGISTER: '/register',
+  REGISTER: (id: string) => `/register/${id}`,
   HANDLE_REGISTER: (pre: string) => `${pre}/new-participant`,
-  TEMPLATE: '/template/:templateId',
-  HANDLE_TEMPLATE: '/template/:templateId/handle_template',
-  PROCESS: '/process/:processId'
 }
 
 const EVENTS = {
@@ -23,8 +16,6 @@ const EVENTS = {
     PARTICIPANT_REGISTER: 'participant_register'
   },
   SEND: {
-    // registration endpoint
-    PARTICIPANT_REGISTER_URL: 'participant_register_url',
     // final / sum
     PARTICIPANT_REGISTER_RESULTS: 'participant_register_results',
     // each individual
