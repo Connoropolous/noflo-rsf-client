@@ -106,6 +106,9 @@ const standUpRegisterPageAndGetResults = (app, mountPoint: string, maxTime: numb
       results.push(newParticipant)
       // also call into callback with each new result
       eachNew({ ...newParticipant }) // clone
+      console.log('typeof maxParticipants', typeof maxParticipants)
+      console.log('maxParticipants', maxParticipants)
+      console.log('numresults', results.length)
       if (results.length === maxParticipants) {
         complete()
       }
