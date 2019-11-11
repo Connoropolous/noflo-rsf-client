@@ -4,7 +4,7 @@ import {
   URLS,
   EVENTS
 } from './constants'
-import { ContactableConfig } from 'rsf-types'
+import { ContactableConfig, ParticipantRegisterData } from 'rsf-types'
 
 const addTestDevPage = (app: express.Application) => {
   /* dev endpoint */
@@ -116,13 +116,6 @@ const standUpRegisterPageAndGetResults = (
       res.redirect(`${mountPoint}?success`)
     })
   })
-}
-
-interface ParticipantRegisterData {
-  id: string
-  maxParticipants: number | string
-  maxTime: number
-  processDescription: string
 }
 
 const addSocketListeners = (io: SocketIO.Server, app: express.Application) => {
