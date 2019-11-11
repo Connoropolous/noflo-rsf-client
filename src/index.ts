@@ -1,10 +1,10 @@
-import * as dotenv from 'dotenv'
-dotenv.config()
-import * as express from 'express'
-import * as exphbs from 'express-handlebars'
-import * as http from 'http'
-import * as path from 'path'
-import * as socketIo from 'socket.io'
+import { config } from 'dotenv'
+config()
+import express from 'express'
+import exphbs from 'express-handlebars'
+import http from 'http'
+import path from 'path'
+import socketIo from 'socket.io'
 const app = express()
 const server = http.createServer(app)
 const io = socketIo(server)

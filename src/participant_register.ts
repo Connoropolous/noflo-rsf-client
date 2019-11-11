@@ -4,9 +4,9 @@ import {
   URLS,
   EVENTS
 } from './constants'
-import { ContactableConfig } from './types'
+import { ContactableConfig } from 'rsf-types'
 
-const addTestDevPage = (app) => {
+const addTestDevPage = (app: express.Application) => {
   /* dev endpoint */
   app.get(URLS.DEV.REGISTER, (req, res) => {
     res.render(VIEWS.REGISTER, {
@@ -35,15 +35,24 @@ const remainingTime = (maxTime: number, startTime: number) => {
   return (maxTime - (Date.now() - startTime) / 1000).toFixed() // round it
 }
 
-const standUpRegisterPageAndGetResults = (app, mountPoint: string, maxTime: number, maxParticipants: any, processDescription: string, eachNew: (newParticipant: ContactableConfig) => void = (newParticipant: ContactableConfig) => { }): Promise<ContactableConfig[]> => {
+type EachNewCallback = (newParticipant: ContactableConfig) => void
+const defaultEachNewParticipant: EachNewCallback = () => {}
+
+const standUpRegisterPageAndGetResults = (
+  app: express.Application,
+  mountPoint: string,
+  maxTime: number,
+  maxParticipants: number | string,
+  processDescription: string,
+  eachNew: EachNewCallback = defaultEachNewParticipant
+): Promise<ContactableConfig[]> => {
   console.log('standing up new registration page at ' + mountPoint)
   return new Promise((resolve) => {
     // capture the process kickoff time for reference
     const startTime = Date.now()
     let results = []
 
-
-    let timeoutId
+    let timeoutId: NodeJS.Timeout
     // stop the process after a maximum amount of time
     timeoutId = setTimeout(() => {
       // complete, saving whatever results we have
@@ -63,10 +72,6 @@ const standUpRegisterPageAndGetResults = (app, mountPoint: string, maxTime: numb
     }
 
     const formHandler = URLS.HANDLE_REGISTER(mountPoint)
-
-
-    // one by one handler
-
     // route for serving the registration form page
     app.get(mountPoint, (req, res) => {
       res.render(VIEWS.REGISTER, {
@@ -81,7 +86,6 @@ const standUpRegisterPageAndGetResults = (app, mountPoint: string, maxTime: numb
         layout: false
       })
     })
-
     // endpoint for handling form submits
     app.post(formHandler, express.urlencoded({ extended: true }), (req, res) => {
       // registration has ended already?
@@ -89,15 +93,12 @@ const standUpRegisterPageAndGetResults = (app, mountPoint: string, maxTime: numb
         res.sendStatus(403) // Forbidden
         return
       }
-
       const input = req.body
-
       if (!validInput(input)) {
         res.redirect(`${mountPoint}?failure`)
         return
       }
-
-      const newParticipant = {
+      const newParticipant: ContactableConfig = {
         id: input.id,
         type: input.type,
         name: input.name
@@ -117,21 +118,28 @@ const standUpRegisterPageAndGetResults = (app, mountPoint: string, maxTime: numb
   })
 }
 
-const addSocketListeners = (io, app) => {
+interface ParticipantRegisterData {
+  id: string
+  maxParticipants: number | string
+  maxTime: number
+  processDescription: string
+}
+
+const addSocketListeners = (io: SocketIO.Server, app: express.Application) => {
   io.on('connection', function (client) {
     // handle participant register flow
-    client.on(EVENTS.RECEIVE.PARTICIPANT_REGISTER, async (data) => {
+    client.on(EVENTS.RECEIVE.PARTICIPANT_REGISTER, async (data: ParticipantRegisterData) => {
       // take the configuration variables that come in as the request
       const { id, maxParticipants, maxTime, processDescription } = data
       const mountPoint = URLS.REGISTER(id)
-      const results = await standUpRegisterPageAndGetResults(
+      const results: ContactableConfig[] = await standUpRegisterPageAndGetResults(
         app,
         mountPoint,
         maxTime,
         maxParticipants,
         processDescription,
         // forward each new registration live as well
-        (newParticipant) => {
+        (newParticipant: ContactableConfig) => {
           client.emit(EVENTS.SEND.PARTICIPANT_REGISTER_RESULT, newParticipant)
         }
       )

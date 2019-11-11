@@ -9,10 +9,13 @@
   "author": "",
   "license": "AGPL-3.0",
   "dependencies": {
+    "@types/express": "^4.17.2",
     "@types/node": "^12.11.1",
+    "@types/socket.io": "^2.1.4",
     "dotenv": "^8.1.0",
     "express": "^4.17.1",
     "express-handlebars": "^3.1.0",
+    "rsf-types": "0.0.23",
     "socket.io": "^2.3.0",
     "ts-node": "^8.4.1",
     "typescript": "^3.6.4"
