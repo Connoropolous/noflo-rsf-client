@@ -44,22 +44,30 @@
 <body>
     <form action="{{formHandler}}" method="post">
         <div id="notifier"></div>
-        {{^registrationClosed}}
+        {{!-- Registration has opened and not closed --}}
+        {{#registrationHasOpened}}
+          {{^registrationClosed}}
+          <div id="process-context">
+              <h1>You are invited to join a rapid sensemaking process</h1>
+              {{#showParticipantBlock}}
+              <p>Registration is limited to {{maxParticipants}} participants.
+                  <br />{{participantCount}} have registered so far.</p>
+              {{/showParticipantBlock}}
+              {{#showTime}}
+              <p>Registration will remain open for another <span id="remaining_time">{{remainingTime}}</span> seconds.</p>
+              {{/showTime}}
+              <h4>Description</h4>
+              <p>{{processDescription}}</p>
+          </div>
+          {{> contactable_form }}
+          <button class="button" type="submit">Register</button>
+          {{/registrationClosed}}
+        {{/registrationHasOpened}}
+        {{^registrationHasOpened}}
         <div id="process-context">
-            <h1>You are invited to join a rapid sensemaking process</h1>
-            {{#showParticipantBlock}}
-            <p>Registration is limited to {{maxParticipants}} participants.
-                <br />{{participantCount}} have registered so far.</p>
-            {{/showParticipantBlock}}
-            {{#showTime}}
-            <p>Registration will remain open for another <span id="remaining_time">{{remainingTime}}</span> seconds.</p>
-            {{/showTime}}
-            <h4>Process Description</h4>
-            <p>{{processDescription}}</p>
+            Registration for this process has not yet begun.
         </div>
-        {{> contactable_form }}
-        <button class="button" type="submit">Register</button>
-        {{/registrationClosed}}
+        {{/registrationHasOpened}}
         {{#registrationClosed}}
         <div id="process-context">
             Registration for this process has closed.

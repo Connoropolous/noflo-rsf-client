@@ -1,19 +1,21 @@
-
 const VIEWS = {
   REGISTER: 'register'
 }
 
 const URLS = {
   DEV: {
-    REGISTER: '/dev-register',
+    REGISTER: '/dev-register'
   },
   REGISTER: (id: string) => `/register/${id}`,
-  HANDLE_REGISTER: (pre: string) => `${pre}/new-participant`,
+  HANDLE_REGISTER: (pre: string) => `${pre}/new-participant`
 }
 
 const EVENTS = {
   RECEIVE: {
-    PARTICIPANT_REGISTER: 'participant_register'
+    //  initial creation
+    PARTICIPANT_REGISTER: 'participant_register',
+    // commence/open
+    OPEN_REGISTER: 'open_register'
   },
   SEND: {
     // final / sum
@@ -23,8 +25,4 @@ const EVENTS = {
   }
 }
 
-export {
-  VIEWS,
-  URLS,
-  EVENTS
-}
+export { VIEWS, URLS, EVENTS }
