@@ -1,6 +1,6 @@
 import * as express from 'express'
 import { VIEWS, URLS, EVENTS } from './constants'
-import { ContactableConfig, ParticipantRegisterData } from 'rsf-types'
+import { ContactableConfig, ParticipantRegisterConfig } from 'rsf-types'
 
 interface Register {
   id: string
@@ -9,7 +9,7 @@ interface Register {
   startTime: number
   maxTime: number
   maxParticipants: number | string
-  processDescription: string
+  description: string
   registrationHasOpened: boolean
   registrationClosed: boolean
   results: ContactableConfig[]
@@ -22,7 +22,7 @@ interface RegisterTemplate {
   remainingTime: string
   maxParticipants: number | string
   participantCount: number
-  processDescription: string
+  description: string
   registrationHasOpened: boolean
   registrationClosed: boolean
   layout: boolean
@@ -38,7 +38,7 @@ const addTestDevPage = (app: express.Application) => {
       remainingTime: '600',
       maxParticipants: 3,
       participantCount: 2,
-      processDescription: 'test',
+      description: 'test',
       registrationHasOpened: true,
       registrationClosed: false,
       layout: false
@@ -68,7 +68,7 @@ const createNewRegister = (
   id: string,
   maxTimeInSeconds: number,
   maxParticipants: number | string,
-  processDescription: string
+  description: string
 ) => {
   const register: Register = {
     id,
@@ -78,7 +78,7 @@ const createNewRegister = (
     startTime: null,
     maxParticipants,
     results: [],
-    processDescription,
+    description,
     registrationHasOpened: false,
     registrationClosed: false
   }
@@ -97,7 +97,7 @@ const createNewRegister = (
       remainingTime: remaining,
       maxParticipants: register.maxParticipants,
       participantCount: register.results.length,
-      processDescription: register.processDescription,
+      description: register.description,
       registrationHasOpened: register.registrationHasOpened,
       registrationClosed: register.registrationClosed,
       layout: false
@@ -174,16 +174,20 @@ const addSocketListeners = (io: SocketIO.Server, app: express.Application) => {
     // create a new register page
     client.on(
       EVENTS.RECEIVE.PARTICIPANT_REGISTER,
-      async (data: ParticipantRegisterData) => {
-        // take the configuration variables that come in as the request
-        const { id, maxParticipants, maxTime, processDescription } = data
+      async (participantRegisterConfig: ParticipantRegisterConfig) => {
+        const {
+          id,
+          maxParticipants,
+          maxTime,
+          description
+        } = participantRegisterConfig
         const mountPoint = URLS.REGISTER(id)
         const register = createNewRegister(
           app,
           mountPoint,
           maxTime,
           maxParticipants,
-          processDescription
+          description
         )
         registers[id] = register
       }
