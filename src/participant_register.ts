@@ -36,7 +36,7 @@ const addTestDevPage = (app: express.Application) => {
       showParticipantBlock: true,
       showTime: true,
       remainingTime: '600',
-      maxParticipants: 3,
+      maxParticipants: `Registration is limited to 3 participants.`,
       participantCount: 2,
       description: 'test',
       registrationHasOpened: true,
@@ -90,12 +90,18 @@ const createNewRegister = (
     const remaining = register.registrationHasOpened
       ? remainingTime(register.maxTime, register.startTime)
       : null
+    const { maxParticipants } = register
     const registerTemplate: RegisterTemplate = {
       formHandler,
       showParticipantBlock: true,
       showTime: true,
       remainingTime: remaining,
-      maxParticipants: register.maxParticipants,
+      maxParticipants:
+        maxParticipants === '*'
+          ? 'The number of participants is unlimited.'
+          : `Registration is limited to ${maxParticipants} participant${
+              maxParticipants === 1 ? '' : 's'
+            }.`,
       participantCount: register.results.length,
       description: register.description,
       registrationHasOpened: register.registrationHasOpened,

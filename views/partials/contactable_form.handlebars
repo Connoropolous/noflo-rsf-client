@@ -13,9 +13,9 @@
 	<div>
 		<label for="type">Contact Type</label>
 		<select class="type" name="type">
-			<option value="telegram">Telegram</option>
 			<option value="phone">Phone</option>
 			<option value="mattermost">Mattermost</option>
+			<option value="telegram" selected="selected">Telegram</option>
 		</select>
 	</div>
 	<div class="contactable-type phone">
@@ -25,11 +25,21 @@
 	<div class="contactable-type mattermost">
 		<label for="mattermost-username">Username</label>
 		<input type="text" class="mattermost-username" name="mattermost-username">
+    <p>
+      The only two supported Mattermost servers at this time are:<br />
+      https://chat.holochain.org<br />
+      https://chat.diglife.coop
+    </p>
 		<label for="mattermost-chat-server">Chat Server URL</label>
 		<input type="text" class="mattermost-chat-server" name="mattermost-chat-server"
 			placeholder="https://chat.server.org" value="https://">
 	</div>
 	<div class="contactable-type telegram show">
+    <p>
+      In order to participate, you will need to first send a message to the bot called 
+      <a href="https://t.me/rapid-sensemaking-bot" target="_blank">rapid-sensemaking-bot</a>.
+      You won't be able to receive messages until you do.
+    </p>
 		<label for="telegram-username">Username</label>
 		<input type="text" class="telegram-username" name="telegram-username" autofocus>
 	</div>
