@@ -1,6 +1,6 @@
 {
   "name": "rsf-http-register",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "An http and websocket server that can then setup a registration page for RSF processes",
   "main": "./dist/index.js",
   "scripts": {
