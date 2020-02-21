@@ -8,7 +8,8 @@ import socketIo from 'socket.io'
 
 import { addTestDevPage, addSocketListeners } from './participant_register'
 
-export default function start() {
+type CloseFn = () => void
+export default function start(): Promise<CloseFn> {
   const app = express()
   const server = http.createServer(app)
   const io = socketIo(server)
@@ -20,7 +21,16 @@ export default function start() {
     addTestDevPage(app)
   }
   addSocketListeners(io, app)
-  server.listen(process.env.PORT, () => {
-    console.log('listening on port ' + process.env.PORT)
+  return new Promise((resolve, reject) => {
+    server
+      .listen(process.env.PORT, () => {
+        const close: CloseFn = () => {
+          server.close()
+        }
+        resolve(close)
+      })
+      .on('error', (err: Error) => {
+        reject(err)
+      })
   })
 }
