@@ -9,7 +9,7 @@ This project uses dotenv, which means you can create a `.env` file in this folde
 Explanations of the environment variables follow:
 
 ```bash
-# Not required: enables a development page at /dev-register for development purposes
+# Optional: enables a development page at /dev-register for development purposes
 NODE_ENV=development
 # Required: sets the networking port the service should run on
 PORT=3012
