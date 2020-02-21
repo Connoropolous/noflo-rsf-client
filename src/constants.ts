@@ -17,6 +17,8 @@ const EVENTS = {
   // commence/open
   OPEN_REGISTER: 'open_register',
   /* OUTBOUND */
+  // error
+  NO_REGISTER_WITH_ID: 'no_register_with_id',
   // final / sum
   PARTICIPANT_REGISTER_RESULTS: 'participant_register_results',
   // each individual

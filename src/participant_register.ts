@@ -201,7 +201,10 @@ const addSocketListeners = (io: SocketIO.Server, app: express.Application) => {
     // activate or open a registration
     client.on(EVENTS.OPEN_REGISTER, async (id: string) => {
       const register = registers[id]
-      if (!register) return
+      if (!register) {
+        client.emit(EVENTS.NO_REGISTER_WITH_ID, id)
+        return
+      }
       const results: ContactableConfig[] = await openRegister(
         app,
         register,
