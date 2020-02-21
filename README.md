@@ -1,6 +1,6 @@
 # Rapid Sensemaking Participant Register UI
 
-connect to this server with a websocket, and stand up a page to accept user registrations for rsf contactables
+connect to this server with a websocket, simplified using [rsf-http-register-client](https://github.com/rapid-sensemaking-framework/rsf-http-register-client), and open up web pages to accept user registrations for [rsf-contactables](https://github.com/rapid-sensemaking-framework/rsf-contactable).
 
 ## Environment Variables
 
