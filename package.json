@@ -5,7 +5,7 @@
   "main": "./dist/index.js",
   "scripts": {
     "start": "./cli.js",
-    "build": "tsc",
+    "build": "tsc --declaration",
     "postinstall": "npm run build"
   },
   "bin": {
