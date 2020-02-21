@@ -179,7 +179,7 @@ const addSocketListeners = (io: SocketIO.Server, app: express.Application) => {
   io.on('connection', function(client) {
     // create a new register page
     client.on(
-      EVENTS.RECEIVE.PARTICIPANT_REGISTER,
+      EVENTS.PARTICIPANT_REGISTER,
       async (participantRegisterConfig: ParticipantRegisterConfig) => {
         const {
           id,
@@ -199,7 +199,7 @@ const addSocketListeners = (io: SocketIO.Server, app: express.Application) => {
       }
     )
     // activate or open a registration
-    client.on(EVENTS.RECEIVE.OPEN_REGISTER, async (id: string) => {
+    client.on(EVENTS.OPEN_REGISTER, async (id: string) => {
       const register = registers[id]
       if (!register) return
       const results: ContactableConfig[] = await openRegister(
@@ -207,11 +207,11 @@ const addSocketListeners = (io: SocketIO.Server, app: express.Application) => {
         register,
         // forward each new registration live as well
         (newParticipant: ContactableConfig) => {
-          client.emit(EVENTS.SEND.PARTICIPANT_REGISTER_RESULT, newParticipant)
+          client.emit(EVENTS.PARTICIPANT_REGISTER_RESULT, newParticipant)
         }
       )
       // send the final results when we've got them
-      client.emit(EVENTS.SEND.PARTICIPANT_REGISTER_RESULTS, results)
+      client.emit(EVENTS.PARTICIPANT_REGISTER_RESULTS, results)
     })
   })
 }
