@@ -1,13 +1,18 @@
 {
-  "name": "rsf-noflo-client",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "rsf-http-register",
+  "version": "0.0.10",
+  "description": "An http and websocket server that can then setup a registration page for RSF processes",
+  "main": "./dist/index.js",
   "scripts": {
-    "start": "ts-node ./src/index.ts"
+    "start": "./cli.js",
+    "build": "tsc",
+    "postinstall": "npm run build"
   },
-  "author": "",
-  "license": "AGPL-3.0",
+  "bin": {
+    "rsf-http-register": "./cli.js"
+  },
+  "author": "Connor Turland",
+  "license": "MIT",
   "dependencies": {
     "@types/express": "^4.17.2",
     "@types/node": "^12.11.1",
