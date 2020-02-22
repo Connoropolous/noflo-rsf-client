@@ -1,13 +1,16 @@
 const VIEWS = {
-  REGISTER: 'register'
+  REGISTER: 'register',
+  REGISTERED: 'registered'
 }
 
 const URLS = {
   DEV: {
-    REGISTER: '/dev-register'
+    REGISTER: '/dev-register',
+    HANDLE_REGISTER: '/handle-dev-register'
   },
   REGISTER: (id: string) => `/register/${id}`,
-  HANDLE_REGISTER: (pre: string) => `${pre}/new-participant`
+  HANDLE_REGISTER: (pre: string) => `${pre}/new-participant`,
+  REGISTERED: '/registered'
 }
 
 const EVENTS = {

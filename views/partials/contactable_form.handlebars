@@ -13,14 +13,14 @@
 	<div>
 		<label for="type">Contact Type</label>
 		<select class="type" name="type">
-			<option value="phone">Phone</option>
+			<option value="sms">SMS</option>
 			<option value="mattermost">Mattermost</option>
 			<option value="telegram" selected="selected">Telegram</option>
 		</select>
 	</div>
-	<div class="contactable-type phone">
-		<label for="phone-number">Number</label>
-		<input type="text" class="phone-number" name="phone-number" placeholder="+12223334444">
+	<div class="contactable-type sms">
+		<label for="sms-number">Number</label>
+		<input type="text" class="sms-number" name="sms-number" placeholder="+12223334444">
 	</div>
 	<div class="contactable-type mattermost">
 		<label for="mattermost-username">Username</label>
@@ -35,11 +35,6 @@
 			placeholder="https://chat.server.org" value="https://">
 	</div>
 	<div class="contactable-type telegram show">
-    <p>
-      In order to participate, you will need to first send a message to the bot called 
-      <a href="https://t.me/rapid-sensemaking-bot" target="_blank">rapid-sensemaking-bot</a>.
-      You won't be able to receive messages until you do.
-    </p>
 		<label for="telegram-username">Username</label>
 		<input type="text" class="telegram-username" name="telegram-username" autofocus>
 	</div>
@@ -100,15 +95,15 @@
 			n.onchange = updateIdForTelegram
 		})
 
-		function updateIdForPhone(event) {
+		function updateIdForSMS(event) {
 			const node = event.target
 			const contactableFormWrapper = node.parentNode.parentNode
-			const value = contactableFormWrapper.querySelector('.phone-number').value
+			const value = contactableFormWrapper.querySelector('.sms-number').value
 			contactableFormWrapper.querySelector('.id').value = value
 		}
-		document.querySelectorAll('.phone-number').forEach(n => {
-			n.onkeyup = updateIdForPhone
-			n.onchange = updateIdForPhone
+		document.querySelectorAll('.sms-number').forEach(n => {
+			n.onkeyup = updateIdForSMS
+			n.onchange = updateIdForSMS
 		})
 	}
 </script>

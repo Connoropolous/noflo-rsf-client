@@ -32,7 +32,7 @@ const addTestDevPage = (app: express.Application) => {
   /* dev endpoint */
   app.get(URLS.DEV.REGISTER, (req, res) => {
     const registerTemplate: RegisterTemplate = {
-      formHandler: '//',
+      formHandler: URLS.DEV.HANDLE_REGISTER,
       showParticipantBlock: true,
       showTime: true,
       remainingTime: '600',
@@ -44,6 +44,28 @@ const addTestDevPage = (app: express.Application) => {
       layout: false
     }
     res.render(VIEWS.REGISTER, registerTemplate)
+  })
+
+  // endpoint for handling form submits
+  app.post(
+    URLS.DEV.HANDLE_REGISTER,
+    express.urlencoded({ extended: true }),
+    (req, res) => {
+      res.redirect(`${URLS.REGISTERED}?type=${req.body.type}`)
+    }
+  )
+}
+
+// The page that shows people confirmation that they've registered successfully
+const addRegisteredPage = (app: express.Application) => {
+  app.get(URLS.REGISTERED, (req, res) => {
+    const type = new URLSearchParams(req.query).get('type')
+    const registeredTemplate = {
+      typeAsString: type,
+      layout: false
+    }
+    registeredTemplate[type] = true
+    res.render(VIEWS.REGISTERED, registeredTemplate)
   })
 }
 
@@ -83,7 +105,6 @@ const createNewRegister = (
     registrationClosed: false
   }
 
-  console.log('standing up new registration page at ' + id)
   // new route for serving the registration form page
   app.get(id, (req, res) => {
     const formHandler = URLS.HANDLE_REGISTER(id)
@@ -134,7 +155,6 @@ const openRegister = (
     // can only fire once
     const complete = () => {
       if (!register.registrationClosed) {
-        console.log('closing registration for ' + register.id)
         register.registrationClosed = true
         clearTimeout(timeoutId)
         resolve(register.results)
@@ -168,7 +188,7 @@ const openRegister = (
         if (register.results.length === register.maxParticipants) {
           complete()
         }
-        res.redirect(`${register.id}?success`)
+        res.redirect(`${URLS.REGISTERED}?type=${input.type}`)
       }
     )
   })
@@ -218,4 +238,4 @@ const addSocketListeners = (io: SocketIO.Server, app: express.Application) => {
     })
   })
 }
-export { addSocketListeners, addTestDevPage }
+export { addRegisteredPage, addSocketListeners, addTestDevPage }

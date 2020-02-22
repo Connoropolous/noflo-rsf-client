@@ -1,120 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Register For A Process</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Register For A Flow</title>
     <style>
+      form {
+        width: 50%;
+        margin: 50px auto;
+        max-width: 800px;
+      }
+
+      @media only screen and (max-width: 800px) {
         form {
-            width: 50%;
-            margin: 50px auto;
-            max-width: 800px;
+          width: 80%;
         }
+      }
 
-        @media only screen and (max-width: 800px){
-            form{
-                width: 80%;
-            }
-        }
+      #notifier.error {
+        color: #a40606;
+      }
 
-        #notifier.error {
-            color: #a40606;
-        }
+      .contactable-type {
+        display: none;
+      }
 
-        #notifier.success {
-            color: #326f00;
-        }
-
-        .contactable-type {
-            display: none;
-        }
-
-        .show {
-            display: block;
-        }
+      .show {
+        display: block;
+      }
     </style>
 
-    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.css">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/milligram/1.3.0/milligram.css">
-</head>
+    <link
+      rel="stylesheet"
+      href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic"
+    />
+    <link
+      rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.css"
+    />
+    <link
+      rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/milligram/1.3.0/milligram.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+  </head>
 
-<body>
-    <form action="{{formHandler}}" method="post">
-        <div id="notifier"></div>
-        {{!-- Registration has opened and not closed --}}
-        {{#registrationHasOpened}}
-          {{^registrationClosed}}
-          <div id="process-context">
-              <h1>You are invited to join a rapid sensemaking process</h1>
-              {{#showParticipantBlock}}
-              <p>{{maxParticipants}}
-                  <br />{{participantCount}} have registered so far.</p>
-              {{/showParticipantBlock}}
-              {{#showTime}}
-              <p>Registration will remain open for another <span id="remaining_time">{{remainingTime}}</span> seconds.</p>
-              {{/showTime}}
-              <h4>Description</h4>
-              <p>{{description}}</p>
-          </div>
-          {{> contactable_form }}
-          <button class="button" type="submit">Register</button>
-          {{/registrationClosed}}
-        {{/registrationHasOpened}}
-        {{^registrationHasOpened}}
-        <div id="process-context">
-            Registration for this process has not yet begun.
-        </div>
-        {{/registrationHasOpened}}
-        {{#registrationClosed}}
-        <div id="process-context">
-            Registration for this process has closed.
-        </div>
-        {{/registrationClosed}}
+  <body>
+    <form action="{{ formHandler }}" method="post">
+      <div id="notifier"></div>
+      {{!-- Registration has opened and not closed --}}
+      {{#registrationHasOpened}}
+      {{^registrationClosed}}
+      <div id="process-context">
+        <h1>You are invited to join a rapid sensemaking flow</h1>
+        {{#showParticipantBlock}}
+        <p>
+          {{ maxParticipants }} <br />{{ participantCount }} have registered so
+          far.
+        </p>
+        {{/showParticipantBlock}}
+        {{#showTime}}
+        <p>
+          Registration will be open for
+          <span id="remaining_time">{{ remainingTime }}</span
+          >.
+        </p>
+        {{/showTime}}
+        <blockquote>
+          <h4>Description</h4>
+          <p>{{ description }}</p>
+        </blockquote>
+      </div>
+      {{> contactable_form }}
+      <button class="button" type="submit">Register</button>
+      {{/registrationClosed}}
+      {{/registrationHasOpened}}
+      {{^registrationHasOpened}}
+      <div id="process-context">
+        Registration for this process has not yet begun.
+      </div>
+      {{/registrationHasOpened}}
+      {{#registrationClosed}}
+      <div id="process-context">
+        Registration for this process has closed.
+      </div>
+      {{/registrationClosed}}
     </form>
 
-
     <script>
-
-        // do countdown
-        const remainingDiv = document.getElementById('remaining_time')
-        if (remainingDiv) {
-            let timeRemaining = parseInt(remainingDiv.innerText)
-            window.setInterval(() => {
-                timeRemaining--
-                if (timeRemaining === 0) {
-                    remainingDiv.parentNode.innerText = 'Registration has closed.'
-                    window.clearInterval(interval)
-                } else {
-                    remainingDiv.innerText = timeRemaining
-                }
-            }, 1000) // every 1 second
+      // do countdown
+      const remainingDiv = document.getElementById('remaining_time')
+      if (remainingDiv) {
+        let timeout
+        let timeRemaining = parseInt(remainingDiv.innerText)
+        function updateRemainingTimeText() {
+          timeRemaining--
+          if (timeRemaining === 0) {
+            remainingDiv.parentNode.innerText = 'Registration has closed.'
+            window.clearInterval(timeout)
+          } else {
+            remainingDiv.innerText = moment
+              .duration(timeRemaining, 'seconds')
+              .humanize()
+          }
         }
+        timeout = window.setInterval(() => {
+          updateRemainingTimeText()
+        }, 1000) // every 1 second
+        updateRemainingTimeText()
+      }
 
-        function checkForSuccess(field) {
-            const url = window.location.href;
-            if (url.indexOf('?' + field) != -1)
-                return true;
-            else if (url.indexOf('&' + field) != -1)
-                return true;
-            return false
-        }
+      function checkForSuccess(field) {
+        const url = window.location.href
+        if (url.indexOf('?' + field) != -1) return true
+        else if (url.indexOf('&' + field) != -1) return true
+        return false
+      }
 
-        // display feedback messages, according
-        // to url query params
-        if (checkForSuccess('success')) {
-            document.getElementById('notifier').classList.add('success')
-            document.getElementById('notifier').innerText = 'You were successfully registered'
-        } else if (checkForSuccess('failure')) {
-            document.getElementById('notifier').classList.add('error')
-            document.getElementById('notifier').innerText = 'The input is invalid'
-        }
+      // display feedback messages, according
+      // to url query params
+      if (checkForSuccess('failure')) {
+        document.getElementById('notifier').classList.add('error')
+        document.getElementById('notifier').innerText = 'The input is invalid'
+      }
 
-        // from contactable_form.mustache
-        clearAndSetupContactableFormListeners()
+      // from contactable_form.mustache
+      clearAndSetupContactableFormListeners()
     </script>
-</body>
-
+  </body>
 </html>

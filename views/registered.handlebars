@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Registered</title>
+    <style>
+      .registered {
+        width: 50%;
+        margin: 50px auto;
+        max-width: 800px;
+        text-align: center;
+      }
+
+      @media only screen and (max-width: 800px) {
+        .registered {
+          width: 80%;
+        }
+      }
+    </style>
+
+    <link
+      rel="stylesheet"
+      href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic"
+    />
+    <link
+      rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.css"
+    />
+    <link
+      rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/milligram/1.3.0/milligram.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+  </head>
+
+  <body>
+    <div class="registered">
+      <img src="/check-mark-circle-line.svg" width="75" />
+      <h1>Great, you've registered!</h1>
+      <h3>
+        Once all registration has completed, you will receive a message via
+        {{ typeAsString }} indicating that the flow has been initiated, and that
+        it's time to participate!
+      </h3>
+      <h3>
+        Open up your {{ typeAsString }} app to make sure you receive next steps.
+      </h3>
+      {{#telegram}}
+      <blockquote>
+        {{> telegram_note }}
+      </blockquote>
+      {{/telegram}}
+    </div>
+  </body>
+</html>
