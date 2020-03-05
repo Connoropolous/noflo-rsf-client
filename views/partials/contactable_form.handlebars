@@ -10,60 +10,84 @@
 </style>
 
 <div class="contactable-form-wrapper">
+  {{!-- The order of the <option> tags need to match the order of the components that follow --}}
 	<div>
 		<label for="type">Contact Type</label>
 		<select class="type" name="type">
-			<option value="sms">SMS</option>
-			<option value="mattermost">Mattermost</option>
-			<option value="telegram" selected="selected">Telegram</option>
+      {{#types}}
+			  {{#sms}}<option value="sms">SMS</option>{{/sms}}
+			  {{#mattermost}}<option value="mattermost">Mattermost</option>{{/mattermost}}
+			  {{#telegram}}<option value="telegram" selected="selected">Telegram</option>{{/telegram}}
+      {{/types}}
 		</select>
 	</div>
-	<div class="contactable-type sms">
-		<label for="sms-number">Number</label>
-		<input type="text" class="sms-number" name="sms-number" placeholder="+12223334444">
-	</div>
+  {{#types}}
+    {{#sms}}
+    <div class="contactable-type sms">
+      <label for="sms-number">Number</label>
+      <input type="text" class="sms-number" name="sms-number" placeholder="+12223334444">
+    </div>
+    {{/sms}}
+  {{#mattermost}}
 	<div class="contactable-type mattermost">
 		<label for="mattermost-username">Username</label>
 		<input type="text" class="mattermost-username" name="mattermost-username">
-    <p>
-      The only two supported Mattermost servers at this time are:<br />
-      https://chat.holochain.org<br />
-      https://chat.diglife.coop
-    </p>
+		<p>
+		The supported Mattermost servers are:<br />
+		https://chat.holochain.org<br />
+		https://chat.diglife.coop
+		</p>
 		<label for="mattermost-chat-server">Chat Server URL</label>
 		<input type="text" class="mattermost-chat-server" name="mattermost-chat-server"
 			placeholder="https://chat.server.org" value="https://">
 	</div>
-	<div class="contactable-type telegram show">
+  {{/mattermost}}
+  {{#telegram}}
+	<div class="contactable-type telegram">
 		<label for="telegram-username">Username</label>
+		<div>
+		You must have a telegram username set, using telegram phone number here won't work.
+		</div>
 		<input type="text" class="telegram-username" name="telegram-username" autofocus>
 	</div>
+  {{/telegram}}
+  {{/types}}
 	<input type="hidden" class="id" name="id"></input>
 </div>
 
 <script>
 	
 	function clearAndSetupContactableFormListeners() {
+
 		// handle the onchange events for the 'type' select field
 		// toggling the display of particular form fields associated
 		// with that type
-		document.querySelectorAll('.type').forEach(node => {
-			const cb = (event) => {
-				// the type from the option value
-				const type = event.target.value
+		document.querySelectorAll('.type').forEach(selectNode => {
+
+			const changeSelectedValue = (type) => {
 				// hide all the other type form fields
-				const contactableFormWrapper = node.parentNode.parentNode
+				const contactableFormWrapper = selectNode.parentNode.parentNode
 				const nodes = contactableFormWrapper.querySelectorAll('.contactable-type')
 				nodes.forEach(n => {
-					n.classList.remove('show')
+					  n.classList.remove('show')
 				})
 				// show the form field for the selected type
 				contactableFormWrapper.querySelector(`.${type}`).classList.add('show')
 				// reset value
 				contactableFormWrapper.querySelector('.id').value = ''
 			}
-			node.removeEventListener('change', cb)
-			node.addEventListener('change', cb)
+			const cb = (event) => {
+				const type = event.target.value
+				changeSelectedValue(type)
+			}
+			selectNode.removeEventListener('change', cb)
+			selectNode.addEventListener('change', cb)
+
+      // set the value equal to the first type in the list of options
+			const urlType = new URLSearchParams(window.location.href).get('type')
+      const defaultType = urlType || selectNode[0].value
+      selectNode.value = defaultType
+      changeSelectedValue(defaultType)
 		})
 
 		// bind mattermost fields event listeners
@@ -73,7 +97,7 @@
 			const contactableFormWrapper = node.parentNode.parentNode
 			const username = contactableFormWrapper.querySelector('.mattermost-username').value
 			const chatServer = contactableFormWrapper.querySelector('.mattermost-chat-server').value
-			contactableFormWrapper.querySelector('.id').value = `${username}@${chatServer}`
+			contactableFormWrapper.querySelector('.id').value = username && chatServer ? `${username}@${chatServer}` : ''
 		}
 		document.querySelectorAll('.mattermost-username').forEach(n => {
 			n.onkeyup = updateIdForMattermost

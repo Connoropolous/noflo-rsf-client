@@ -19,7 +19,11 @@
       }
 
       #notifier.error {
-        color: #a40606;
+        background: #d43838;
+        color: #FFF;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 8px;
       }
 
       .contactable-type {
@@ -48,12 +52,11 @@
 
   <body>
     <form action="{{ formHandler }}" method="post">
-      <div id="notifier"></div>
       {{!-- Registration has opened and not closed --}}
       {{#registrationHasOpened}}
       {{^registrationClosed}}
       <div id="process-context">
-        <h1>You are invited to join a rapid sensemaking flow</h1>
+        <h1>{{ title }}</h1>
         {{#showParticipantBlock}}
         <p>
           {{ maxParticipants }} <br />{{ participantCount }} have registered so
@@ -73,6 +76,7 @@
         </blockquote>
       </div>
       {{> contactable_form }}
+      <div id="notifier"></div>
       <button class="button" type="submit">Register</button>
       {{/registrationClosed}}
       {{/registrationHasOpened}}
@@ -111,18 +115,17 @@
         updateRemainingTimeText()
       }
 
-      function checkForSuccess(field) {
+      function checkForFailure() {
         const url = window.location.href
-        if (url.indexOf('?' + field) != -1) return true
-        else if (url.indexOf('&' + field) != -1) return true
+        if (url.includes('?failure')) return true
         return false
       }
 
       // display feedback messages, according
       // to url query params
-      if (checkForSuccess('failure')) {
+      if (checkForFailure()) {
         document.getElementById('notifier').classList.add('error')
-        document.getElementById('notifier').innerText = 'The input is invalid'
+        document.getElementById('notifier').innerText = new URLSearchParams(window.location.href).get('reason')
       }
 
       // from contactable_form.mustache

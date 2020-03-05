@@ -1,6 +1,10 @@
 import * as express from 'express'
 import { VIEWS, URLS, EVENTS } from './constants'
-import { ContactableConfig, ParticipantRegisterConfig } from 'rsf-types'
+import {
+  ContactableConfig,
+  ParticipantRegisterConfig,
+  RegisterTypesConfig
+} from 'rsf-types'
 
 interface Register {
   id: string
@@ -9,12 +13,15 @@ interface Register {
   startTime: number
   maxTime: number
   maxParticipants: number | string
+  title: string
   description: string
+  types: RegisterTypesConfig
   registrationHasOpened: boolean
   registrationClosed: boolean
   results: ContactableConfig[]
 }
 
+// For handlebars templates
 interface RegisterTemplate {
   formHandler: string
   showParticipantBlock: boolean
@@ -22,7 +29,9 @@ interface RegisterTemplate {
   remainingTime: string
   maxParticipants: number | string
   participantCount: number
+  title: string
   description: string
+  types: RegisterTypesConfig
   registrationHasOpened: boolean
   registrationClosed: boolean
   layout: boolean
@@ -35,10 +44,16 @@ const addTestDevPage = (app: express.Application) => {
       formHandler: URLS.DEV.HANDLE_REGISTER,
       showParticipantBlock: true,
       showTime: true,
+      title: 'You are invited',
       remainingTime: '600',
       maxParticipants: `Registration is limited to 3 participants.`,
       participantCount: 2,
       description: 'test',
+      types: {
+        sms: false,
+        telegram: true,
+        mattermost: true
+      },
       registrationHasOpened: true,
       registrationClosed: false,
       layout: false
@@ -51,6 +66,13 @@ const addTestDevPage = (app: express.Application) => {
     URLS.DEV.HANDLE_REGISTER,
     express.urlencoded({ extended: true }),
     (req, res) => {
+      try {
+        validateInput(req.body)
+      } catch (e) {
+        res.redirect(`${URLS.DEV.REGISTER}?failure&type=${req.body.type}&reason=${e.message}`)
+        return
+      }
+
       res.redirect(`${URLS.REGISTERED}?type=${req.body.type}`)
     }
   )
@@ -70,11 +92,10 @@ const addRegisteredPage = (app: express.Application) => {
 }
 
 // validate a proposed ContactableConfig
-const validInput = (input: ContactableConfig): boolean => {
-  if (!input.type || !input.id) {
-    return false
-  }
-  return true
+const validateInput = (input: ContactableConfig): void => {
+  if (!input.type) throw new Error('type cannot be blank')
+  if (!input.id) throw new Error('identity cannot be blank')
+  if (input.id.includes(' ')) throw new Error('identity cannot contain spaces')
 }
 
 const remainingTime = (maxTimeInSeconds: number, startTime: number): string => {
@@ -90,17 +111,21 @@ const createNewRegister = (
   id: string,
   maxTimeInSeconds: number,
   maxParticipants: number | string,
-  description: string
+  title: string,
+  description: string,
+  types: RegisterTypesConfig
 ) => {
   const register: Register = {
     id,
+    types,
+    title,
+    description,
+    maxParticipants,
+    maxTime: maxTimeInSeconds,
     showParticipantBlock: true,
     showTime: true,
-    maxTime: maxTimeInSeconds,
     startTime: null,
-    maxParticipants,
     results: [],
-    description,
     registrationHasOpened: false,
     registrationClosed: false
   }
@@ -124,9 +149,11 @@ const createNewRegister = (
               maxParticipants === 1 ? '' : 's'
             }.`,
       participantCount: register.results.length,
+      title: register.title,
       description: register.description,
       registrationHasOpened: register.registrationHasOpened,
       registrationClosed: register.registrationClosed,
+      types: register.types,
       layout: false
     }
     res.render(VIEWS.REGISTER, registerTemplate)
@@ -172,10 +199,14 @@ const openRegister = (
           return
         }
         const input = req.body
-        if (!validInput(input)) {
-          res.redirect(`${register.id}?failure`)
+
+        try {
+          validateInput(input)
+        } catch (e) {
+          res.redirect(`${register.id}?failure&type=${input.type}&reason=${e.message}`)
           return
         }
+
         const newParticipant: ContactableConfig = {
           id: input.id,
           type: input.type,
@@ -203,17 +234,22 @@ const addSocketListeners = (io: SocketIO.Server, app: express.Application) => {
       async (participantRegisterConfig: ParticipantRegisterConfig) => {
         const {
           id,
+          title,
+          description,
           maxParticipants,
           maxTime,
-          description
+          types
         } = participantRegisterConfig
+
         const mountPoint = URLS.REGISTER(id)
         const register = createNewRegister(
           app,
           mountPoint,
           maxTime,
           maxParticipants,
-          description
+          title,
+          description,
+          types
         )
         registers[id] = register
       }
